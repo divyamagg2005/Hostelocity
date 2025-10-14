@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Room {{ room.room_number }} - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-door-open"></i> Room Details</h5>
+                {% if user.is_superuser or user.profile.role == 'admin' %}
+                <div>
+                    <a href="{% url 'room_edit' room.pk %}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="{% url 'room_delete' room.pk %}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th width="40%">Room Number:</th>
+                        <td><strong>{{ room.room_number }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Type:</th>
+                        <td>{{ room.get_room_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Floor:</th>
+                        <td>{{ room.floor }}</td>
+                    </tr>
+                    <tr>
+                        <th>Capacity:</th>
+                        <td>{{ room.capacity }}</td>
+                    </tr>
+                    <tr>
+                        <th>Current Occupancy:</th>
+                        <td>{{ room.current_occupancy }}</td>
+                    </tr>
+                    <tr>
+                        <th>Available Spaces:</th>
+                        <td>{{ room.available_spaces }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            {% if room.is_full %}
+                            <span class="badge bg-danger">Full</span>
+                            {% else %}
+                            <span class="badge bg-success">Available</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description:</th>
+                        <td>{{ room.description|default:"N/A" }}</td>
+                    </tr>
+                </table>
+                
+                <div class="mb-3">
+                    <h6>Occupancy Status:</h6>
+                    {% with percentage=room.occupancy_percentage %}
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar {% if percentage >= 100 %}bg-danger{% elif percentage >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                             role="progressbar" 
+                             aria-valuenow="{{ percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"
+                             style="width: {{ percentage|floatformat:0 }}%">
+                            {{ percentage|floatformat:0 }}%
+                        </div>
+                    </div>
+                    {% endwith %}
+                </div>
+                
+                <a href="{% url 'room_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Students in this Room</h5>
+            </div>
+            <div class="card-body">
+                {% if students %}
+                <ul class="list-group">
+                    {% for student in students %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if student.photo %}
+                            <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                            {% else %}
+                            <i class="bi bi-person-circle me-2" style="font-size: 2rem; color: #667eea;"></i>
+                            {% endif %}
+                            <strong>{{ student.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ student.roll_number }}</small>
+                        </div>
+                        <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-primary">View</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted mb-0">No students assigned to this room yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

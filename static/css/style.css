@@ -1,0 +1,12 @@
+/* Custom styles for Hostel Management System */
+
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Additional custom styles can be added here */

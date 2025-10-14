@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Rooms - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-door-open"></i> Rooms Overview</h5>
+                {% if user.is_superuser or user.profile.role == 'admin' %}
+                <a href="{% url 'room_add' %}" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-circle"></i> Add Room
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h2 class="text-primary">{{ total_rooms }}</h2>
+                            <p class="text-muted">Total Rooms</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h2 class="text-danger">{{ occupied_rooms }}</h2>
+                            <p class="text-muted">Occupied</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h2 class="text-success">{{ available_rooms }}</h2>
+                            <p class="text-muted">Available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list"></i> All Rooms</h5>
+            </div>
+            <div class="card-body">
+                {% if rooms %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Room Number</th>
+                                <th>Type</th>
+                                <th>Floor</th>
+                                <th>Capacity</th>
+                                <th>Occupancy</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for room in rooms %}
+                            <tr>
+                                <td><strong>{{ room.room_number }}</strong></td>
+                                <td>{{ room.get_room_type_display }}</td>
+                                <td>{{ room.floor }}</td>
+                                <td>{{ room.capacity }}</td>
+                                <td>
+                                    {% with percentage=room.occupancy_percentage %}
+                                    <div class="progress" style="height: 25px;">
+                                        <div class="progress-bar {% if percentage >= 100 %}bg-danger{% elif percentage >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                             role="progressbar" 
+                                             aria-valuenow="{{ percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100"
+                                             style="width: {{ percentage|floatformat:0 }}%">
+                                            {{ room.current_occupancy }}/{{ room.capacity }}
+                                        </div>
+                                    </div>
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% if room.is_full %}
+                                    <span class="badge bg-danger">Full</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Available</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'room_detail' room.pk %}" class="btn btn-sm btn-info" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if user.is_superuser or user.profile.role == 'admin' %}
+                                    <a href="{% url 'room_edit' room.pk %}" class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'room_delete' room.pk %}" class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">No rooms found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

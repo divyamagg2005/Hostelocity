@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-white mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-md-3">
+        <div class="card stat-card" style="border-left-color: #3498db;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Total Students</h6>
+                        <h2 class="mb-0">{{ total_students }}</h2>
+                    </div>
+                    <div class="text-primary" style="font-size: 3rem;">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card" style="border-left-color: #e74c3c;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Occupied Rooms</h6>
+                        <h2 class="mb-0">{{ occupied_rooms }}/{{ total_rooms }}</h2>
+                    </div>
+                    <div class="text-danger" style="font-size: 3rem;">
+                        <i class="bi bi-door-closed"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card" style="border-left-color: #f39c12;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Pending Complaints</h6>
+                        <h2 class="mb-0">{{ pending_complaints }}</h2>
+                    </div>
+                    <div class="text-warning" style="font-size: 3rem;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card" style="border-left-color: #27ae60;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-1">Fees Collected</h6>
+                        <h2 class="mb-0">₹{{ fees_collected }}</h2>
+                    </div>
+                    <div class="text-success" style="font-size: 3rem;">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Recent Complaints</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_complaints %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in recent_complaints %}
+                            <tr>
+                                <td>{{ complaint.student.name }}</td>
+                                <td>{{ complaint.subject|truncatewords:5 }}</td>
+                                <td>
+                                    {% if complaint.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif complaint.status == 'in_progress' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Resolved</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'complaint_list' %}" class="btn btn-sm btn-primary">View All</a>
+                {% else %}
+                <p class="text-muted mb-0">No complaints yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Recent Students</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_students %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Roll No</th>
+                                <th>Room</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in recent_students %}
+                            <tr>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.roll_number }}</td>
+                                <td>{{ student.room.room_number|default:"Not Assigned" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'student_list' %}" class="btn btn-sm btn-primary">View All</a>
+                {% else %}
+                <p class="text-muted mb-0">No students yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'student_add' %}" class="btn btn-primary me-2 mb-2">
+                    <i class="bi bi-person-plus"></i> Add Student
+                </a>
+                <a href="{% url 'room_add' %}" class="btn btn-success me-2 mb-2">
+                    <i class="bi bi-door-open"></i> Add Room
+                </a>
+                <a href="{% url 'payment_add' %}" class="btn btn-info me-2 mb-2">
+                    <i class="bi bi-credit-card"></i> Add Payment
+                </a>
+                <a href="{% url 'complaint_list' %}" class="btn btn-warning mb-2">
+                    <i class="bi bi-exclamation-circle"></i> View Complaints
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

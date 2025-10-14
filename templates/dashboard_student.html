@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-white mb-4"><i class="bi bi-speedometer2"></i> Student Dashboard</h2>
+    </div>
+</div>
+
+{% if student %}
+<!-- Student Info Card -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person"></i> My Profile</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if student.photo %}
+                <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                <div class="mb-3" style="font-size: 5rem; color: #667eea;">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                {% endif %}
+                <h4>{{ student.name }}</h4>
+                <p class="text-muted mb-1">{{ student.roll_number }}</p>
+                <p class="mb-1"><strong>Course:</strong> {{ student.course }}</p>
+                <p class="mb-1"><strong>Year:</strong> {{ student.get_year_display }}</p>
+                <p class="mb-1"><strong>Room:</strong> {{ student.room.room_number|default:"Not Assigned" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card stat-card" style="border-left-color: #e74c3c;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Pending Payments</h6>
+                                <h2 class="mb-0">{{ pending_payments }}</h2>
+                            </div>
+                            <div class="text-danger" style="font-size: 3rem;">
+                                <i class="bi bi-credit-card"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card stat-card" style="border-left-color: #f39c12;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">My Complaints</h6>
+                                <h2 class="mb-0">{{ my_complaints|length }}</h2>
+                            </div>
+                            <div class="text-warning" style="font-size: 3rem;">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Room Details -->
+        {% if student.room %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-door-open"></i> My Room</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Room Number:</strong> {{ student.room.room_number }}</p>
+                <p><strong>Type:</strong> {{ student.room.get_room_type_display }}</p>
+                <p><strong>Floor:</strong> {{ student.room.floor }}</p>
+                <p><strong>Capacity:</strong> {{ student.room.capacity }}</p>
+                <p><strong>Current Occupancy:</strong> {{ student.room.current_occupancy }}</p>
+                <a href="{% url 'room_detail' student.room.pk %}" class="btn btn-sm btn-primary">View Details</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> My Recent Complaints</h5>
+            </div>
+            <div class="card-body">
+                {% if my_complaints %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for complaint in my_complaints %}
+                            <tr>
+                                <td>{{ complaint.subject|truncatewords:5 }}</td>
+                                <td>
+                                    {% if complaint.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif complaint.status == 'in_progress' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                    {% else %}
+                                    <span class="badge bg-success">Resolved</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ complaint.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'complaint_list' %}" class="btn btn-sm btn-primary">View All</a>
+                {% else %}
+                <p class="text-muted mb-0">No complaints yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Recent Payments</h5>
+            </div>
+            <div class="card-body">
+                {% if my_payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in my_payments %}
+                            <tr>
+                                <td>{{ payment.get_payment_type_display }}</td>
+                                <td>₹{{ payment.amount }}</td>
+                                <td>
+                                    {% if payment.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif payment.status == 'paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'payment_list' %}" class="btn btn-sm btn-primary">View All</a>
+                {% else %}
+                <p class="text-muted mb-0">No payment records yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'complaint_add' %}" class="btn btn-warning me-2 mb-2">
+                    <i class="bi bi-plus-circle"></i> Submit Complaint
+                </a>
+                <a href="{% url 'complaint_list' %}" class="btn btn-info me-2 mb-2">
+                    <i class="bi bi-list-ul"></i> View My Complaints
+                </a>
+                <a href="{% url 'payment_list' %}" class="btn btn-success mb-2">
+                    <i class="bi bi-credit-card"></i> View Payment History
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Student Profile Not Found</h4>
+                <p class="text-muted">Your student profile has not been created yet. Please contact the administrator.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

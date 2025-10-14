@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-arrow-repeat"></i> {{ title }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>Student:</strong> {{ payment.student.name }}<br>
+                    <strong>Type:</strong> {{ payment.get_payment_type_display }}<br>
+                    <strong>Amount:</strong> ₹{{ payment.amount }}
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Update
+                        </button>
+                        <a href="{% url 'payment_detail' payment.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
