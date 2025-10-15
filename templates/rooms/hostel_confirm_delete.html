@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Hostel - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm Delete</h5>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to delete hostel <strong>{{ hostel.name }}</strong>?</p>
+                <p class="text-danger"><strong>Warning:</strong> This will also delete all rooms in this hostel!</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Yes, Delete
+                    </button>
+                    <a href="{% url 'hostel_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

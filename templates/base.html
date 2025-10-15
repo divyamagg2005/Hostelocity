@@ -94,6 +94,24 @@
             padding: 20px 0;
             margin-top: auto;
         }
+        
+        /* Active navigation link styling */
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.25) !important;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-link {
+            transition: all 0.3s ease;
+            margin: 0 5px;
+            border-radius: 8px;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -112,33 +130,47 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
                             <i class="bi bi-speedometer2"></i> Dashboard
                         </a>
                     </li>
                     
                     {% if user.is_superuser or user.profile.role == 'admin' %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'student_list' %}">
+                        <a class="nav-link {% if 'student' in request.path %}active{% endif %}" href="{% url 'student_list' %}">
                             <i class="bi bi-people"></i> Students
                         </a>
                     </li>
                     {% endif %}
                     
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'room_list' %}">
-                            <i class="bi bi-door-open"></i> Rooms
+                        <a class="nav-link {% if 'hostel' in request.path %}active{% endif %}" href="{% url 'hostel_list' %}">
+                            <i class="bi bi-building"></i> Hostels
                         </a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'complaint_list' %}">
+                        <a class="nav-link {% if 'room' in request.path and 'hostel' not in request.path %}active{% endif %}" href="{% url 'room_list' %}">
+                            <i class="bi bi-door-open"></i> Rooms
+                        </a>
+                    </li>
+                    
+                    {% if user.is_superuser or user.profile.role == 'admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'allocation' in request.path %}active{% endif %}" href="{% url 'allocation_list' %}">
+                            <i class="bi bi-person-badge"></i> Allocations
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'complaint' in request.path %}active{% endif %}" href="{% url 'complaint_list' %}">
                             <i class="bi bi-exclamation-circle"></i> Complaints
                         </a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'payment_list' %}">
+                        <a class="nav-link {% if 'payment' in request.path %}active{% endif %}" href="{% url 'payment_list' %}">
                             <i class="bi bi-credit-card"></i> Payments
                         </a>
                     </li>

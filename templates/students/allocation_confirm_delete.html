@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Remove Allocation - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm Remove Allocation</h5>
+            </div>
+            <div class="card-body">
+                <p>Are you sure you want to remove the room allocation for:</p>
+                <ul>
+                    <li><strong>Student:</strong> {{ allocation.student.name }}</li>
+                    <li><strong>Room:</strong> {{ allocation.room.roomnumber }}</li>
+                    <li><strong>Hostel:</strong> {{ allocation.room.hostelid.name }}</li>
+                </ul>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Yes, Remove
+                    </button>
+                    <a href="{% url 'allocation_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

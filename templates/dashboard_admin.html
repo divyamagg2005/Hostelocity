@@ -79,15 +79,15 @@
 <!-- Recent Activity -->
 <div class="row mt-4">
     <div class="col-md-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> Recent Complaints</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body d-flex flex-column">
                 {% if recent_complaints %}
-                <div class="table-responsive">
+                <div class="table-responsive flex-grow-1" style="max-height: 300px; overflow-y: auto;">
                     <table class="table table-hover">
-                        <thead>
+                        <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                             <tr>
                                 <th>Student</th>
                                 <th>Subject</th>
@@ -113,7 +113,9 @@
                         </tbody>
                     </table>
                 </div>
-                <a href="{% url 'complaint_list' %}" class="btn btn-sm btn-primary">View All</a>
+                <div class="mt-2">
+                    <a href="{% url 'complaint_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
                 {% else %}
                 <p class="text-muted mb-0">No complaints yet.</p>
                 {% endif %}
@@ -122,18 +124,18 @@
     </div>
     
     <div class="col-md-6">
-        <div class="card">
+        <div class="card h-100">
             <div class="card-header">
                 <h5 class="mb-0"><i class="bi bi-people"></i> Recent Students</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body d-flex flex-column">
                 {% if recent_students %}
-                <div class="table-responsive">
+                <div class="table-responsive flex-grow-1" style="max-height: 300px; overflow-y: auto;">
                     <table class="table table-hover">
-                        <thead>
+                        <thead style="position: sticky; top: 0; background: white; z-index: 1;">
                             <tr>
                                 <th>Name</th>
-                                <th>Roll No</th>
+                                <th>Student ID</th>
                                 <th>Room</th>
                             </tr>
                         </thead>
@@ -141,14 +143,24 @@
                             {% for student in recent_students %}
                             <tr>
                                 <td>{{ student.name }}</td>
-                                <td>{{ student.roll_number }}</td>
-                                <td>{{ student.room.room_number|default:"Not Assigned" }}</td>
+                                <td>{{ student.studentid }}</td>
+                                <td>
+                                    {% with current_room=student.get_current_room %}
+                                        {% if current_room %}
+                                            {{ current_room.roomnumber }}
+                                        {% else %}
+                                            Not Assigned
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                <a href="{% url 'student_list' %}" class="btn btn-sm btn-primary">View All</a>
+                <div class="mt-2">
+                    <a href="{% url 'student_list' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
                 {% else %}
                 <p class="text-muted mb-0">No students yet.</p>
                 {% endif %}

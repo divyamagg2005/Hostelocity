@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import Room
-from .forms import RoomForm
+from .models import Room, Hostel
+from .forms import RoomForm, HostelForm
 
 
 def is_admin(user):
@@ -102,10 +102,96 @@ def room_delete(request, pk):
 def room_detail(request, pk):
     """View room details"""
     room = get_object_or_404(Room, pk=pk)
-    students = room.students.filter(is_active=True)
+    from students.models import Allocation
+    allocations = Allocation.objects.filter(room=room)
     
     context = {
         'room': room,
-        'students': students,
+        'allocations': allocations,
     }
     return render(request, 'rooms/room_detail.html', context)
+
+
+# Hostel Views
+@login_required
+def hostel_list(request):
+    """List all hostels"""
+    hostels = Hostel.objects.all()
+    context = {
+        'hostels': hostels,
+    }
+    return render(request, 'rooms/hostel_list.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def hostel_add(request):
+    """Add new hostel"""
+    if request.method == 'POST':
+        form = HostelForm(request.POST)
+        if form.is_valid():
+            hostel = form.save()
+            messages.success(request, f'Hostel {hostel.name} added successfully!')
+            return redirect('hostel_list')
+    else:
+        form = HostelForm()
+    
+    context = {
+        'form': form,
+        'title': 'Add Hostel',
+    }
+    return render(request, 'rooms/hostel_form.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def hostel_edit(request, pk):
+    """Edit hostel"""
+    hostel = get_object_or_404(Hostel, pk=pk)
+    
+    if request.method == 'POST':
+        form = HostelForm(request.POST, instance=hostel)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Hostel {hostel.name} updated successfully!')
+            return redirect('hostel_list')
+    else:
+        form = HostelForm(instance=hostel)
+    
+    context = {
+        'form': form,
+        'title': 'Edit Hostel',
+        'hostel': hostel,
+    }
+    return render(request, 'rooms/hostel_form.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def hostel_delete(request, pk):
+    """Delete hostel"""
+    hostel = get_object_or_404(Hostel, pk=pk)
+    
+    if request.method == 'POST':
+        hostel_name = hostel.name
+        hostel.delete()
+        messages.success(request, f'Hostel {hostel_name} deleted successfully!')
+        return redirect('hostel_list')
+    
+    context = {
+        'hostel': hostel,
+    }
+    return render(request, 'rooms/hostel_confirm_delete.html', context)
+
+
+@login_required
+def hostel_detail(request, pk):
+    """View hostel details"""
+    hostel = get_object_or_404(Hostel, pk=pk)
+    rooms = hostel.rooms.all()
+    
+    context = {
+        'hostel': hostel,
+        'rooms': rooms,
+    }
+    return render(request, 'rooms/hostel_detail.html', context)

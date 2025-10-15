@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import Student
-from .forms import StudentForm
+from .models import Student, Allocation
+from .forms import StudentForm, AllocationForm
+from datetime import date
 
 
 def is_admin(user):
@@ -97,7 +98,62 @@ def student_detail(request, pk):
         messages.error(request, 'You do not have permission to view this page.')
         return redirect('dashboard')
     
+    allocations = student.allocations.all()
+    
     context = {
         'student': student,
+        'allocations': allocations,
     }
     return render(request, 'students/student_detail.html', context)
+
+
+# Allocation Views
+@login_required
+@user_passes_test(is_admin)
+def allocation_list(request):
+    """List all room allocations"""
+    allocations = Allocation.objects.all().select_related('student', 'room')
+    context = {
+        'allocations': allocations,
+    }
+    return render(request, 'students/allocation_list.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def allocation_add(request):
+    """Allocate room to student"""
+    if request.method == 'POST':
+        form = AllocationForm(request.POST)
+        if form.is_valid():
+            allocation = form.save(commit=False)
+            allocation.date_of_allocation = date.today()
+            allocation.save()
+            messages.success(request, f'Room allocated to {allocation.student.name} successfully!')
+            return redirect('allocation_list')
+    else:
+        form = AllocationForm()
+    
+    context = {
+        'form': form,
+        'title': 'Allocate Room',
+    }
+    return render(request, 'students/allocation_form.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
+def allocation_delete(request, pk):
+    """Remove room allocation"""
+    allocation = get_object_or_404(Allocation, pk=pk)
+    
+    if request.method == 'POST':
+        student_name = allocation.student.name
+        allocation.delete()
+        messages.success(request, f'Room allocation for {student_name} removed successfully!')
+        return redirect('allocation_list')
+    
+    context = {
+        'allocation': allocation,
+    }
+    return render(request, 'students/allocation_confirm_delete.html', context)

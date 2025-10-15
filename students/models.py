@@ -26,6 +26,22 @@ class UserProfile(models.Model):
 class Student(models.Model):
     """Student model - EXACTLY matches Supabase Student table"""
     
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+    ]
+    
+    DEPARTMENT_CHOICES = [
+        ('CSE', 'Computer Science Engineering'),
+        ('ECE', 'Electronics & Communication Engineering'),
+        ('EE', 'Electrical Engineering'),
+        ('ME', 'Mechanical Engineering'),
+        ('CE', 'Civil Engineering'),
+        ('IT', 'Information Technology'),
+        ('CHE', 'Chemical Engineering'),
+        ('BT', 'Biotechnology'),
+    ]
+    
     # Primary Key
     studentid = models.AutoField(primary_key=True, db_column='studentid')
     
@@ -33,8 +49,8 @@ class Student(models.Model):
     name = models.CharField(max_length=100, db_column='name')
     
     # Optional fields
-    gender = models.CharField(max_length=10, blank=True, null=True, db_column='gender')
-    department = models.CharField(max_length=50, blank=True, null=True, db_column='department')
+    gender = models.CharField(max_length=10, blank=True, null=True, db_column='gender', choices=GENDER_CHOICES)
+    department = models.CharField(max_length=50, blank=True, null=True, db_column='department', choices=DEPARTMENT_CHOICES)
     phone = models.CharField(max_length=15, blank=True, null=True, db_column='phone')
     
     def __str__(self):

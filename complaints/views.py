@@ -115,6 +115,24 @@ def complaint_update(request, pk):
 
 @login_required
 @user_passes_test(is_admin)
+def complaint_resolve(request, pk):
+    """Mark complaint as resolved and delete it (admin only)"""
+    complaint = get_object_or_404(Complaint, pk=pk)
+    
+    if request.method == 'POST':
+        student_name = complaint.student.name
+        complaint.delete()
+        messages.success(request, f'Complaint from {student_name} marked as resolved and removed!')
+        return redirect('complaint_list')
+    
+    context = {
+        'complaint': complaint,
+    }
+    return render(request, 'complaints/complaint_confirm_resolve.html', context)
+
+
+@login_required
+@user_passes_test(is_admin)
 def complaint_delete(request, pk):
     """Delete complaint (admin only)"""
     complaint = get_object_or_404(Complaint, pk=pk)

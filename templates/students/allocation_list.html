@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Room Allocations - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> Room Allocations</h5>
+                <a href="{% url 'allocation_add' %}" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-circle"></i> Allocate Room
+                </a>
+            </div>
+            <div class="card-body">
+                {% if allocations %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Allocation ID</th>
+                                <th>Student</th>
+                                <th>Room</th>
+                                <th>Hostel</th>
+                                <th>Date Allocated</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for allocation in allocations %}
+                            <tr>
+                                <td>{{ allocation.allocationid }}</td>
+                                <td>
+                                    <i class="bi bi-person-circle" style="font-size: 1.5rem; color: #667eea; vertical-align: middle;"></i>
+                                    {{ allocation.student.name }}
+                                </td>
+                                <td>{{ allocation.room.roomnumber }}</td>
+                                <td>{{ allocation.room.hostelid.name }}</td>
+                                <td>{{ allocation.date_of_allocation|date:"M d, Y"|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'student_detail' allocation.student.pk %}" class="btn btn-sm btn-info" title="View Student">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'allocation_delete' allocation.pk %}" class="btn btn-sm btn-danger" title="Remove Allocation">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">No room allocations found. <a href="{% url 'allocation_add' %}">Allocate a room now</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

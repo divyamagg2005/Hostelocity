@@ -33,6 +33,7 @@ class Complaint(models.Model):
         return f"{self.subject} - {self.student.name}"
     
     class Meta:
+        db_table = 'complaint'
         ordering = ['-created_at']
         verbose_name = 'Complaint'
         verbose_name_plural = 'Complaints'

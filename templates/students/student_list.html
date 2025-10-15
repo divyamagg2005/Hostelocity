@@ -18,37 +18,34 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>Photo</th>
+                                <th>ID</th>
                                 <th>Name</th>
-                                <th>Roll Number</th>
-                                <th>Course</th>
-                                <th>Year</th>
+                                <th>Gender</th>
+                                <th>Department</th>
+                                <th>Phone</th>
                                 <th>Room</th>
-                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for student in students %}
                             <tr>
+                                <td>{{ student.studentid }}</td>
                                 <td>
-                                    {% if student.photo %}
-                                    <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                                    {% else %}
-                                    <i class="bi bi-person-circle" style="font-size: 2rem; color: #667eea;"></i>
-                                    {% endif %}
+                                    <i class="bi bi-person-circle" style="font-size: 1.5rem; color: #667eea; vertical-align: middle;"></i>
+                                    {{ student.name }}
                                 </td>
-                                <td>{{ student.name }}</td>
-                                <td>{{ student.roll_number }}</td>
-                                <td>{{ student.course }}</td>
-                                <td>{{ student.get_year_display }}</td>
-                                <td>{{ student.room.room_number|default:"Not Assigned" }}</td>
+                                <td>{{ student.gender|default:"-" }}</td>
+                                <td>{{ student.get_department_display|default:"-" }}</td>
+                                <td>{{ student.phone|default:"-" }}</td>
                                 <td>
-                                    {% if student.is_active %}
-                                    <span class="badge bg-success">Active</span>
-                                    {% else %}
-                                    <span class="badge bg-secondary">Inactive</span>
-                                    {% endif %}
+                                    {% with current_room=student.get_current_room %}
+                                        {% if current_room %}
+                                            {{ current_room.room_number }}
+                                        {% else %}
+                                            <span class="text-muted">Not Assigned</span>
+                                        {% endif %}
+                                    {% endwith %}
                                 </td>
                                 <td>
                                     <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-info" title="View">

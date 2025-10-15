@@ -21,12 +21,10 @@
                         <thead>
                             <tr>
                                 {% if user.is_superuser or user.profile.role == 'admin' %}
-                                <th>Student</th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
                                 {% endif %}
-                                <th>Type</th>
                                 <th>Amount</th>
-                                <th>Due Date</th>
-                                <th>Payment Date</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -35,19 +33,15 @@
                             {% for payment in payments %}
                             <tr>
                                 {% if user.is_superuser or user.profile.role == 'admin' %}
-                                <td>{{ payment.student.name }}</td>
+                                <td>{{ payment.studentid.studentid }}</td>
+                                <td>{{ payment.studentid.name }}</td>
                                 {% endif %}
-                                <td>{{ payment.get_payment_type_display }}</td>
                                 <td><strong>₹{{ payment.amount }}</strong></td>
-                                <td>{{ payment.due_date|date:"M d, Y" }}</td>
-                                <td>{{ payment.payment_date|date:"M d, Y"|default:"N/A" }}</td>
                                 <td>
-                                    {% if payment.status == 'pending' %}
-                                    <span class="badge bg-warning">Pending</span>
-                                    {% elif payment.status == 'paid' %}
+                                    {% if payment.status == 'Paid' %}
                                     <span class="badge bg-success">Paid</span>
                                     {% else %}
-                                    <span class="badge bg-danger">Overdue</span>
+                                    <span class="badge bg-warning">Not Paid</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -55,9 +49,11 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     {% if user.is_superuser or user.profile.role == 'admin' %}
-                                    <a href="{% url 'payment_update_status' payment.pk %}" class="btn btn-sm btn-warning" title="Update">
-                                        <i class="bi bi-pencil"></i>
+                                    {% if payment.status != 'Paid' %}
+                                    <a href="{% url 'payment_update_status' payment.pk %}" class="btn btn-sm btn-success" title="Mark as Paid">
+                                        <i class="bi bi-check-circle"></i>
                                     </a>
+                                    {% endif %}
                                     <a href="{% url 'payment_delete' payment.pk %}" class="btn btn-sm btn-danger" title="Delete">
                                         <i class="bi bi-trash"></i>
                                     </a>

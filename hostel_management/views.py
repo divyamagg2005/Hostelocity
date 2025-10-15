@@ -104,15 +104,16 @@ def dashboard(request):
         
         pending_complaints = Complaint.objects.filter(status='pending').count()
         
-        # Get paid fees
-        paid_fees = Fee.objects.filter(status='Paid')
+        # Get paid fees (case-insensitive to handle 'Paid', 'paid', 'PAID')
+        from django.db.models import Q
+        paid_fees = Fee.objects.filter(Q(status__iexact='paid') | Q(status__iexact='Paid'))
         fees_collected = paid_fees.aggregate(Sum('amount'))['amount__sum'] or 0
         
         # Recent complaints
         recent_complaints = Complaint.objects.all().order_by('-created_at')[:5]
         
-        # Recent students
-        recent_students = Student.objects.all().order_by('-studentid')[:5]
+        # Recent students (limit to 4 to prevent UI overflow)
+        recent_students = Student.objects.all().order_by('-studentid')[:4]
         
         context = {
             'role': role,

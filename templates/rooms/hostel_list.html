@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Hostels - Hostel Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Hostels List</h5>
+                <a href="{% url 'hostel_add' %}" class="btn btn-light btn-sm">
+                    <i class="bi bi-plus-circle"></i> Add Hostel
+                </a>
+            </div>
+            <div class="card-body">
+                {% if hostels %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Total Rooms</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for hostel in hostels %}
+                            <tr>
+                                <td>{{ hostel.hostelid }}</td>
+                                <td>
+                                    <i class="bi bi-building" style="font-size: 1.5rem; color: #667eea; vertical-align: middle;"></i>
+                                    {{ hostel.name }}
+                                </td>
+                                <td>{{ hostel.location|default:"-" }}</td>
+                                <td>{{ hostel.totalrooms|default:"0" }}</td>
+                                <td>
+                                    <a href="{% url 'hostel_detail' hostel.pk %}" class="btn btn-sm btn-info" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'hostel_edit' hostel.pk %}" class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'hostel_delete' hostel.pk %}" class="btn btn-sm btn-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">No hostels found. <a href="{% url 'hostel_add' %}">Add one now</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
