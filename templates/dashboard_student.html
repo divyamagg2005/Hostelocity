@@ -10,6 +10,22 @@
 </div>
 
 {% if student %}
+<!-- Profile Completion Alert -->
+{% if not student_profile.address or not student_profile.father_name or not student_profile.mother_name %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Profile Incomplete!</strong> Please complete your profile details to access all features.
+            <a href="{% url 'student_profile_edit' %}" class="btn btn-warning btn-sm ms-2">
+                <i class="bi bi-pencil-square"></i> Complete Profile
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Student Personal Details -->
 <div class="row">
     <div class="col-md-6">
@@ -62,19 +78,27 @@
                 </div>
                 {% endif %}
                 
-                <!-- Emergency Contact -->
-                {% if student_profile.emergency_contact %}
+                
+                <!-- Hostel Mess -->
+                {% if student_profile.hostel_mess %}
                 <hr>
-                <h6 class="text-muted mb-3">Emergency Contact</h6>
+                <h6 class="text-muted mb-3">Hostel Mess</h6>
                 <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Contact Person:</strong> {{ student_profile.emergency_contact }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Emergency Phone:</strong> {{ student_profile.emergency_phone|default:"Not provided" }}</p>
+                    <div class="col-md-12">
+                        <p><strong>Assigned Mess:</strong> 
+                            <span class="badge bg-info">{{ student_profile.hostel_mess }}</span>
+                        </p>
                     </div>
                 </div>
                 {% endif %}
+                
+                <!-- Edit Profile Button -->
+                <hr>
+                <div class="text-center">
+                    <a href="{% url 'student_profile_edit' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil-square"></i> Edit Profile Details
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -131,10 +155,22 @@
                             <div class="col-md-6">
                                 <p><strong>Room Number:</strong> {{ current_room.roomnumber }}</p>
                                 <p><strong>Hostel:</strong> {{ current_room.hostel.name }}</p>
-                                <p><strong>Room Type:</strong> {{ current_room.roomtype }}</p>
+                                <p><strong>Room Type:</strong> {{ current_room.type|default:"Not specified" }}</p>
                             </div>
                             <div class="col-md-6">
-                                <p><strong>Floor:</strong> {{ current_room.floor }}</p>
+                                <p><strong>Floor:</strong> 
+                                    {% if current_room.roomnumber %}
+                                        {% with room_num=current_room.roomnumber|stringformat:"s" %}
+                                            {% if room_num|length >= 2 %}
+                                                {{ room_num|slice:":2" }}th Floor
+                                            {% else %}
+                                                Ground Floor
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+                                </p>
                                 <p><strong>Capacity:</strong> {{ current_room.capacity }}</p>
                                 <p><strong>Allocation Date:</strong> 
                                     {% with allocation=student.get_current_allocation %}
@@ -311,8 +347,11 @@
                 <a href="{% url 'complaint_list' %}" class="btn btn-info me-2 mb-2">
                     <i class="bi bi-list-ul"></i> View My Complaints
                 </a>
+                <a href="{% url 'student_payment_make' %}" class="btn btn-primary me-2 mb-2">
+                    <i class="bi bi-credit-card"></i> Make Payment
+                </a>
                 <a href="{% url 'payment_list' %}" class="btn btn-success mb-2">
-                    <i class="bi bi-credit-card"></i> View Payment History
+                    <i class="bi bi-clock-history"></i> Payment History
                 </a>
             </div>
         </div>

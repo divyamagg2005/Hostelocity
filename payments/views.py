@@ -26,11 +26,20 @@ def payment_list(request):
     else:
         # Student sees only their payments
         try:
-            student = Student.objects.get(user=request.user)
-            payments = Fee.objects.filter(student=student)
-        except Student.DoesNotExist:
+            # Try to find student by username matching
+            student = Student.objects.filter(name__icontains=request.user.username).first()
+            if not student:
+                # If no exact match, try to find by user profile or create a basic student record
+                student = Student.objects.filter(studentid=request.user.id).first()
+            
+            if student:
+                payments = Fee.objects.filter(studentid=student)
+            else:
+                payments = []
+                messages.warning(request, 'Student profile not found.')
+        except Exception as e:
             payments = []
-            messages.warning(request, 'Student profile not found.')
+            messages.warning(request, f'Error finding student profile: {str(e)}')
     
     context = {
         'payments': payments,
@@ -66,12 +75,21 @@ def payment_detail(request, pk):
     # Check permissions
     if not is_admin(request.user):
         try:
-            student = Student.objects.get(user=request.user)
-            if payment.student != student:
+            # Try to find student by username matching
+            student = Student.objects.filter(name__icontains=request.user.username).first()
+            if not student:
+                # If no exact match, try to find by user profile or create a basic student record
+                student = Student.objects.filter(studentid=request.user.id).first()
+            
+            if not student:
+                messages.error(request, 'Student profile not found.')
+                return redirect('dashboard')
+            
+            if payment.studentid != student:
                 messages.error(request, 'You do not have permission to view this payment.')
                 return redirect('payment_list')
-        except Student.DoesNotExist:
-            messages.error(request, 'Student profile not found.')
+        except Exception as e:
+            messages.error(request, f'Error finding student profile: {str(e)}')
             return redirect('dashboard')
     
     context = {
@@ -145,3 +163,42 @@ def payment_delete(request, pk):
         'payment': payment,
     }
     return render(request, 'payments/payment_confirm_delete.html', context)
+
+
+@login_required
+def student_payment_make(request):
+    """Student payment interface with dropdown and amount controls"""
+    # Try to find student by username matching
+    student = Student.objects.filter(name__icontains=request.user.username).first()
+    if not student:
+        # If no exact match, try to find by user profile or create a basic student record
+        student = Student.objects.filter(studentid=request.user.id).first()
+    
+    if not student:
+        messages.error(request, 'Student profile not found. Please contact admin.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        payment_type = request.POST.get('payment_type')
+        amount = request.POST.get('amount')
+        
+        if payment_type and amount:
+            try:
+                # Create a new fee record for the student
+                fee = Fee.objects.create(
+                    studentid=student,
+                    amount=amount,
+                    duedate=timezone.now().date(),
+                    status='Paid'  # Mark as paid since student is making payment
+                )
+                messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully!')
+                return redirect('payment_list')
+            except Exception as e:
+                messages.error(request, f'Error processing payment: {str(e)}')
+        else:
+            messages.error(request, 'Please fill in all required fields.')
+    
+    context = {
+        'student': student,
+    }
+    return render(request, 'payments/student_payment_make.html', context)

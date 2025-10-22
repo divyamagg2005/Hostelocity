@@ -162,8 +162,8 @@ def dashboard(request):
                     student_profile = StudentProfile.objects.create(student=student)
                 
                 my_complaints = Complaint.objects.filter(student=student).order_by('-created_at')[:5]
-                my_payments = Fee.objects.filter(student=student).order_by('-due_date')[:5]
-                pending_payments = Fee.objects.filter(student=student, status='Pending').count()
+                my_payments = Fee.objects.filter(studentid=student).order_by('-duedate')[:5]
+                pending_payments = Fee.objects.filter(studentid=student, status='Pending').count()
                 
                 context = {
                     'role': role,

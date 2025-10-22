@@ -181,8 +181,14 @@
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link {% if 'payment' in request.path %}active{% endif %}" href="{% url 'payment_list' %}">
+                        <a class="nav-link {% if 'payment' in request.path and 'make' not in request.path %}active{% endif %}" href="{% url 'payment_list' %}">
                             <i class="bi bi-credit-card"></i> My Payments
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'make' in request.path %}active{% endif %}" href="{% url 'student_payment_make' %}">
+                            <i class="bi bi-wallet2"></i> Make Payment
                         </a>
                     </li>
                     {% endif %}

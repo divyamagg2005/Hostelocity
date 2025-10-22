@@ -77,6 +77,13 @@ class Student(models.Model):
 
 class StudentProfile(models.Model):
     """Extended student profile with additional personal details"""
+    
+    MESS_CHOICES = [
+        ('Buddies & Bites', 'Buddies & Bites'),
+        ('Eat n\' Chill', 'Eat n\' Chill'),
+        ('The Late Plate', 'The Late Plate'),
+    ]
+    
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='profile')
     address = models.TextField(blank=True, null=True, help_text="Permanent address")
     father_name = models.CharField(max_length=100, blank=True, null=True)
@@ -86,9 +93,17 @@ class StudentProfile(models.Model):
     emergency_contact = models.CharField(max_length=100, blank=True, null=True)
     emergency_phone = models.CharField(max_length=15, blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
+    hostel_mess = models.CharField(max_length=50, choices=MESS_CHOICES, blank=True, null=True)
     
     def __str__(self):
         return f"{self.student.name} - Profile"
+    
+    def save(self, *args, **kwargs):
+        # Auto-assign mess if not already assigned
+        if not self.hostel_mess:
+            import random
+            self.hostel_mess = random.choice([choice[0] for choice in self.MESS_CHOICES])
+        super().save(*args, **kwargs)
     
     class Meta:
         verbose_name = 'Student Profile'
