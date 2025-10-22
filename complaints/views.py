@@ -26,11 +26,20 @@ def complaint_list(request):
     else:
         # Student sees only their complaints
         try:
-            student = Student.objects.get(user=request.user)
-            complaints = Complaint.objects.filter(student=student)
-        except Student.DoesNotExist:
+            # Try to find student by username matching
+            student = Student.objects.filter(name__icontains=request.user.username).first()
+            if not student:
+                # If no exact match, try to find by user profile or create a basic student record
+                student = Student.objects.filter(studentid=request.user.id).first()
+            
+            if student:
+                complaints = Complaint.objects.filter(student=student)
+            else:
+                complaints = []
+                messages.warning(request, 'Student profile not found.')
+        except Exception as e:
             complaints = []
-            messages.warning(request, 'Student profile not found.')
+            messages.warning(request, f'Error finding student profile: {str(e)}')
     
     context = {
         'complaints': complaints,
@@ -41,9 +50,13 @@ def complaint_list(request):
 @login_required
 def complaint_add(request):
     """Add new complaint (students only)"""
-    try:
-        student = Student.objects.get(user=request.user)
-    except Student.DoesNotExist:
+    # Try to find student by username matching
+    student = Student.objects.filter(name__icontains=request.user.username).first()
+    if not student:
+        # If no exact match, try to find by user profile or create a basic student record
+        student = Student.objects.filter(studentid=request.user.id).first()
+    
+    if not student:
         messages.error(request, 'Student profile not found. Please contact admin.')
         return redirect('dashboard')
     
@@ -72,14 +85,19 @@ def complaint_detail(request, pk):
     
     # Check permissions
     if not is_admin(request.user):
-        try:
-            student = Student.objects.get(user=request.user)
-            if complaint.student != student:
-                messages.error(request, 'You do not have permission to view this complaint.')
-                return redirect('complaint_list')
-        except Student.DoesNotExist:
+        # Try to find student by username matching
+        student = Student.objects.filter(name__icontains=request.user.username).first()
+        if not student:
+            # If no exact match, try to find by user profile or create a basic student record
+            student = Student.objects.filter(studentid=request.user.id).first()
+        
+        if not student:
             messages.error(request, 'Student profile not found.')
             return redirect('dashboard')
+        
+        if complaint.student != student:
+            messages.error(request, 'You do not have permission to view this complaint.')
+            return redirect('complaint_list')
     
     context = {
         'complaint': complaint,

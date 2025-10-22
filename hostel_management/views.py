@@ -26,14 +26,30 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        login_type = request.POST.get('login_type', 'admin')
         
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
-            messages.success(request, f'Welcome back, {user.username}!')
-            return redirect('dashboard')
+            # Check if user has the correct role for the login type
+            if login_type == 'admin':
+                if user.is_superuser or (hasattr(user, 'profile') and user.profile.role == 'admin'):
+                    login(request, user)
+                    messages.success(request, f'Welcome back, {user.username}!')
+                    return redirect('dashboard')
+                else:
+                    messages.error(request, 'You do not have admin privileges.')
+            else:  # student login
+                if hasattr(user, 'profile') and user.profile.role == 'student':
+                    login(request, user)
+                    messages.success(request, f'Welcome back, {user.username}!')
+                    return redirect('dashboard')
+                else:
+                    messages.error(request, 'You do not have student privileges.')
         else:
-            messages.error(request, 'Invalid username or password.')
+            if login_type == 'student':
+                messages.error(request, 'Invalid username or password. If you are a new student, please create an account.')
+            else:
+                messages.error(request, 'Invalid username or password.')
     
     return render(request, 'login.html')
 
@@ -131,22 +147,44 @@ def dashboard(request):
     else:
         # Student dashboard
         try:
-            student = Student.objects.get(user=request.user)
-            my_complaints = Complaint.objects.filter(student=student).order_by('-created_at')[:5]
-            my_payments = Fee.objects.filter(student=student).order_by('-due_date')[:5]
-            pending_payments = Fee.objects.filter(student=student, status='Pending').count()
+            # Try to find student by username matching
+            student = Student.objects.filter(name__icontains=request.user.username).first()
+            if not student:
+                # If no exact match, try to find by user profile or create a basic student record
+                student = Student.objects.filter(studentid=request.user.id).first()
             
-            context = {
-                'role': role,
-                'student': student,
-                'my_complaints': my_complaints,
-                'my_payments': my_payments,
-                'pending_payments': pending_payments,
-            }
-            return render(request, 'dashboard_student.html', context)
-        except Student.DoesNotExist:
-            # Student profile not created yet
-            messages.warning(request, 'Your student profile is not complete. Please contact the admin.')
+            if student:
+                # Get or create student profile
+                from students.models import StudentProfile
+                try:
+                    student_profile = StudentProfile.objects.get(student=student)
+                except StudentProfile.DoesNotExist:
+                    student_profile = StudentProfile.objects.create(student=student)
+                
+                my_complaints = Complaint.objects.filter(student=student).order_by('-created_at')[:5]
+                my_payments = Fee.objects.filter(student=student).order_by('-due_date')[:5]
+                pending_payments = Fee.objects.filter(student=student, status='Pending').count()
+                
+                context = {
+                    'role': role,
+                    'student': student,
+                    'student_profile': student_profile,
+                    'my_complaints': my_complaints,
+                    'my_payments': my_payments,
+                    'pending_payments': pending_payments,
+                }
+                return render(request, 'dashboard_student.html', context)
+            else:
+                # Student profile not found - show message to contact admin
+                messages.warning(request, 'Your student profile is not found in the system. Please contact the administrator to create your profile.')
+                context = {
+                    'role': role,
+                    'student': None,
+                }
+                return render(request, 'dashboard_student.html', context)
+        except Exception as e:
+            # Handle any other errors
+            messages.error(request, f'Error loading student dashboard: {str(e)}')
             context = {
                 'role': role,
                 'student': None,

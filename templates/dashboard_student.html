@@ -10,34 +10,79 @@
 </div>
 
 {% if student %}
-<!-- Student Info Card -->
+<!-- Student Personal Details -->
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-person"></i> My Profile</h5>
+                <h5 class="mb-0"><i class="bi bi-person"></i> Personal Information</h5>
             </div>
-            <div class="card-body text-center">
-                {% if student.photo %}
-                <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                {% else %}
-                <div class="mb-3" style="font-size: 5rem; color: #667eea;">
-                    <i class="bi bi-person-circle"></i>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ student.name }}</p>
+                        <p><strong>Student ID:</strong> {{ student.studentid }}</p>
+                        <p><strong>Gender:</strong> {{ student.gender|default:"Not specified" }}</p>
+                        <p><strong>Department:</strong> {{ student.department|default:"Not specified" }}</p>
+                        <p><strong>Date of Birth:</strong> 
+                            {% if student_profile.date_of_birth %}
+                                {{ student_profile.date_of_birth|date:"M d, Y" }}
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Phone:</strong> {{ student.phone|default:"Not provided" }}</p>
+                        <p><strong>Email:</strong> {{ user.email|default:"Not provided" }}</p>
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Address:</strong> 
+                            {% if student_profile.address %}
+                                {{ student_profile.address|truncatewords:10 }}
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Parent Information -->
+                {% if student_profile.father_name or student_profile.mother_name %}
+                <hr>
+                <h6 class="text-muted mb-3">Parent Information</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Father's Name:</strong> {{ student_profile.father_name|default:"Not provided" }}</p>
+                        <p><strong>Father's Phone:</strong> {{ student_profile.father_phone|default:"Not provided" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Mother's Name:</strong> {{ student_profile.mother_name|default:"Not provided" }}</p>
+                        <p><strong>Mother's Phone:</strong> {{ student_profile.mother_phone|default:"Not provided" }}</p>
+                    </div>
                 </div>
                 {% endif %}
-                <h4>{{ student.name }}</h4>
-                <p class="text-muted mb-1">{{ student.roll_number }}</p>
-                <p class="mb-1"><strong>Course:</strong> {{ student.course }}</p>
-                <p class="mb-1"><strong>Year:</strong> {{ student.get_year_display }}</p>
-                <p class="mb-1"><strong>Room:</strong> {{ student.room.room_number|default:"Not Assigned" }}</p>
+                
+                <!-- Emergency Contact -->
+                {% if student_profile.emergency_contact %}
+                <hr>
+                <h6 class="text-muted mb-3">Emergency Contact</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Contact Person:</strong> {{ student_profile.emergency_contact }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Emergency Phone:</strong> {{ student_profile.emergency_phone|default:"Not provided" }}</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
     
-    <div class="col-md-8">
+    <div class="col-md-6">
         <!-- Statistics -->
-        <div class="row mb-4">
-            <div class="col-md-6">
+        <div class="row">
+            <div class="col-12 mb-3">
                 <div class="card stat-card" style="border-left-color: #e74c3c;">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -53,7 +98,7 @@
                 </div>
             </div>
             
-            <div class="col-md-6">
+            <div class="col-12">
                 <div class="card stat-card" style="border-left-color: #f39c12;">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -69,23 +114,97 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Room Details -->
-        {% if student.room %}
-        <div class="card mb-4">
+    </div>
+</div>
+
+<!-- Room Allocation Details -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-door-open"></i> My Room</h5>
+                <h5 class="mb-0"><i class="bi bi-door-open"></i> Room Allocation</h5>
             </div>
             <div class="card-body">
-                <p><strong>Room Number:</strong> {{ student.room.room_number }}</p>
-                <p><strong>Type:</strong> {{ student.room.get_room_type_display }}</p>
-                <p><strong>Floor:</strong> {{ student.room.floor }}</p>
-                <p><strong>Capacity:</strong> {{ student.room.capacity }}</p>
-                <p><strong>Current Occupancy:</strong> {{ student.room.current_occupancy }}</p>
-                <a href="{% url 'room_detail' student.room.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                {% with current_room=student.get_current_room %}
+                    {% if current_room %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Room Number:</strong> {{ current_room.roomnumber }}</p>
+                                <p><strong>Hostel:</strong> {{ current_room.hostel.name }}</p>
+                                <p><strong>Room Type:</strong> {{ current_room.roomtype }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Floor:</strong> {{ current_room.floor }}</p>
+                                <p><strong>Capacity:</strong> {{ current_room.capacity }}</p>
+                                <p><strong>Allocation Date:</strong> 
+                                    {% with allocation=student.get_current_allocation %}
+                                        {{ allocation.date_of_allocation|date:"M d, Y" }}
+                                    {% endwith %}
+                                </p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center">
+                            <i class="bi bi-door-closed text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-2">No Room Assigned</h5>
+                            <p class="text-muted">You have not been assigned a room yet. Please contact the administrator.</p>
+                        </div>
+                    {% endif %}
+                {% endwith %}
             </div>
         </div>
-        {% endif %}
+    </div>
+</div>
+
+<!-- Payment Dues -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Dues</h5>
+            </div>
+            <div class="card-body">
+                {% if my_payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Payment Type</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in my_payments %}
+                            <tr>
+                                <td>{{ payment.payment_type }}</td>
+                                <td>₹{{ payment.amount }}</td>
+                                <td>{{ payment.due_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if payment.status == 'Pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif payment.status == 'Paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'payment_list' %}" class="btn btn-sm btn-primary">View All Payments</a>
+                {% else %}
+                <div class="text-center">
+                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h5 class="mt-2">No Payment Dues</h5>
+                    <p class="text-muted">You have no pending payments.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
@@ -153,12 +272,12 @@
                         <tbody>
                             {% for payment in my_payments %}
                             <tr>
-                                <td>{{ payment.get_payment_type_display }}</td>
+                                <td>{{ payment.payment_type }}</td>
                                 <td>₹{{ payment.amount }}</td>
                                 <td>
-                                    {% if payment.status == 'pending' %}
+                                    {% if payment.status == 'Pending' %}
                                     <span class="badge bg-warning">Pending</span>
-                                    {% elif payment.status == 'paid' %}
+                                    {% elif payment.status == 'Paid' %}
                                     <span class="badge bg-success">Paid</span>
                                     {% else %}
                                     <span class="badge bg-danger">Overdue</span>

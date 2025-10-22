@@ -75,6 +75,26 @@ class Student(models.Model):
         return allocation.room if allocation else None
 
 
+class StudentProfile(models.Model):
+    """Extended student profile with additional personal details"""
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name='profile')
+    address = models.TextField(blank=True, null=True, help_text="Permanent address")
+    father_name = models.CharField(max_length=100, blank=True, null=True)
+    mother_name = models.CharField(max_length=100, blank=True, null=True)
+    father_phone = models.CharField(max_length=15, blank=True, null=True)
+    mother_phone = models.CharField(max_length=15, blank=True, null=True)
+    emergency_contact = models.CharField(max_length=100, blank=True, null=True)
+    emergency_phone = models.CharField(max_length=15, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.student.name} - Profile"
+    
+    class Meta:
+        verbose_name = 'Student Profile'
+        verbose_name_plural = 'Student Profiles'
+
+
 class Allocation(models.Model):
     """Allocation model - EXACTLY matches Supabase Allocation table"""
     
