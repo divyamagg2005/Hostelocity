@@ -214,7 +214,13 @@
                         <tbody>
                             {% for payment in my_payments %}
                             <tr>
-                                <td>{{ payment.payment_type }}</td>
+                                <td>
+                                    {% if payment.payment_record %}
+                                        {{ payment.payment_record.payment_type }}
+                                    {% else %}
+                                        General Payment
+                                    {% endif %}
+                                </td>
                                 <td>₹{{ payment.amount }}</td>
                                 <td>{{ payment.due_date|date:"M d, Y" }}</td>
                                 <td>
@@ -308,7 +314,13 @@
                         <tbody>
                             {% for payment in my_payments %}
                             <tr>
-                                <td>{{ payment.payment_type }}</td>
+                                <td>
+                                    {% if payment.payment_record %}
+                                        {{ payment.payment_record.payment_type }}
+                                    {% else %}
+                                        General Payment
+                                    {% endif %}
+                                </td>
                                 <td>₹{{ payment.amount }}</td>
                                 <td>
                                     {% if payment.status == 'Pending' %}

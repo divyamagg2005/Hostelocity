@@ -191,6 +191,14 @@ def student_payment_make(request):
                     duedate=timezone.now().date(),
                     status='Paid'  # Mark as paid since student is making payment
                 )
+                
+                # Create a payment record to track the payment type
+                from .models import PaymentRecord
+                PaymentRecord.objects.create(
+                    fee=fee,
+                    payment_type=payment_type
+                )
+                
                 messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully!')
                 return redirect('payment_list')
             except Exception as e:

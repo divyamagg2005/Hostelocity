@@ -37,6 +37,28 @@ class Fee(models.Model):
         managed = False  # Don't let Django manage this table
 
 
+class PaymentRecord(models.Model):
+    """Payment record model to track payment types and details"""
+    
+    PAYMENT_TYPE_CHOICES = [
+        ('Fees', 'Fees'),
+        ('Hostel', 'Hostel'),
+        ('Fests', 'Fests'),
+        ('Clubs/Chapters', 'Clubs/Chapters'),
+    ]
+    
+    fee = models.OneToOneField(Fee, on_delete=models.CASCADE, related_name='payment_record')
+    payment_type = models.CharField(max_length=50, choices=PAYMENT_TYPE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.fee.studentid.name if self.fee.studentid else 'N/A'} - {self.payment_type} - ₹{self.fee.amount}"
+    
+    class Meta:
+        verbose_name = 'Payment Record'
+        verbose_name_plural = 'Payment Records'
+
+
 # Keep Payment model for backward compatibility with existing code
 class Payment(Fee):
     """Proxy model for Fee to maintain compatibility"""

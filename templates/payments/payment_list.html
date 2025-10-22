@@ -24,7 +24,9 @@
                                 <th>Student ID</th>
                                 <th>Student Name</th>
                                 {% endif %}
+                                <th>Payment Type</th>
                                 <th>Amount</th>
+                                <th>Due Date</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -36,7 +38,15 @@
                                 <td>{{ payment.studentid.studentid }}</td>
                                 <td>{{ payment.studentid.name }}</td>
                                 {% endif %}
+                                <td>
+                                    {% if payment.payment_record %}
+                                        {{ payment.payment_record.payment_type }}
+                                    {% else %}
+                                        General Payment
+                                    {% endif %}
+                                </td>
                                 <td><strong>₹{{ payment.amount }}</strong></td>
+                                <td>{{ payment.due_date|date:"M d, Y" }}</td>
                                 <td>
                                     {% if payment.status == 'Paid' %}
                                     <span class="badge bg-success">Paid</span>
