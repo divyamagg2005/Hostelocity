@@ -23,6 +23,7 @@ def payment_list(request):
     if is_admin(request.user):
         # Admin sees all payments
         payments = Fee.objects.all()
+        template = 'payments/payment_list.html'
     else:
         # Student sees only their payments
         try:
@@ -40,11 +41,12 @@ def payment_list(request):
         except Exception as e:
             payments = []
             messages.warning(request, f'Error finding student profile: {str(e)}')
+        template = 'payments/student_payment_list.html'
     
     context = {
         'payments': payments,
     }
-    return render(request, 'payments/payment_list.html', context)
+    return render(request, template, context)
 
 
 @login_required
@@ -55,6 +57,16 @@ def payment_add(request):
         form = FeeForm(request.POST)
         if form.is_valid():
             payment = form.save()
+            
+            # Create PaymentRecord if payment_type is provided
+            payment_type = form.cleaned_data.get('payment_type')
+            if payment_type:
+                from .models import PaymentRecord
+                PaymentRecord.objects.create(
+                    fee=payment,
+                    payment_type=payment_type
+                )
+            
             messages.success(request, f'Payment added for {payment.student.name}!')
             return redirect('payment_list')
     else:
@@ -72,8 +84,10 @@ def payment_detail(request, pk):
     """View payment details"""
     payment = get_object_or_404(Fee, pk=pk)
     
-    # Check permissions
-    if not is_admin(request.user):
+    # Check permissions and determine template
+    if is_admin(request.user):
+        template = 'payments/payment_detail.html'
+    else:
         try:
             # Try to find student by username matching
             student = Student.objects.filter(name__icontains=request.user.username).first()
@@ -91,11 +105,13 @@ def payment_detail(request, pk):
         except Exception as e:
             messages.error(request, f'Error finding student profile: {str(e)}')
             return redirect('dashboard')
+        
+        template = 'payments/student_payment_detail.html'
     
     context = {
         'payment': payment,
     }
-    return render(request, 'payments/payment_detail.html', context)
+    return render(request, template, context)
 
 
 @login_required
@@ -108,6 +124,23 @@ def payment_edit(request, pk):
         form = FeeForm(request.POST, instance=payment)
         if form.is_valid():
             form.save()
+            
+            # Update or create PaymentRecord if payment_type is provided
+            payment_type = form.cleaned_data.get('payment_type')
+            if payment_type:
+                from .models import PaymentRecord
+                PaymentRecord.objects.update_or_create(
+                    fee=payment,
+                    defaults={'payment_type': payment_type}
+                )
+            else:
+                # If payment_type is empty, delete the PaymentRecord if it exists
+                try:
+                    payment_record = payment.payment_record
+                    payment_record.delete()
+                except:
+                    pass
+            
             messages.success(request, 'Payment updated successfully!')
             return redirect('payment_detail', pk=pk)
     else:

@@ -1,0 +1,122 @@
+{% extends 'base_student.html' %}
+
+{% block title %}Payment Details - Hostelocity{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="page-title"><i class="bi bi-receipt"></i> Payment Details</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Payment Type:</strong> 
+                            {% if payment.payment_record %}
+                                <span class="badge bg-primary">{{ payment.payment_record.payment_type }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">General Payment</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            {% if payment.status == 'Pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif payment.status == 'Paid' %}
+                            <span class="badge bg-success">Paid</span>
+                            {% else %}
+                            <span class="badge bg-danger">Overdue</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Amount:</strong> <span class="text-success" style="font-size: 1.5rem;">₹{{ payment.amount }}</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Due Date:</strong> {{ payment.duedate|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+                
+                {% if payment.payment_record %}
+                <hr>
+                <div class="mb-3">
+                    <h6 class="text-muted">Payment Details:</h6>
+                    <p><strong>Payment ID:</strong> {{ payment.pk }}</p>
+                    <p><strong>Payment Method:</strong> {{ payment.payment_record.payment_type }}</p>
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'payment_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                    {% if payment.status == 'Pending' %}
+                    <a href="{% url 'student_payment_make' %}" class="btn btn-success">
+                        <i class="bi bi-credit-card"></i> Pay Now
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Payment Status</h5>
+            </div>
+            <div class="card-body">
+                {% if payment.status == 'Pending' %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Payment Pending</strong>
+                    <p class="mb-0 mt-2">Please make the payment before the due date to avoid late fees.</p>
+                </div>
+                {% elif payment.status == 'Paid' %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Payment Completed</strong>
+                    <p class="mb-0 mt-2">Your payment has been successfully processed. Thank you!</p>
+                </div>
+                {% else %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-x-circle"></i>
+                    <strong>Payment Overdue</strong>
+                    <p class="mb-0 mt-2">This payment is overdue. Please make the payment immediately.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'student_payment_make' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Make New Payment
+                    </a>
+                    <a href="{% url 'payment_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-list-ul"></i> View All Payments
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

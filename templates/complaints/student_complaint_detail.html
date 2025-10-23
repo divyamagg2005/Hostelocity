@@ -1,0 +1,128 @@
+{% extends 'base_student.html' %}
+
+{% block title %}Complaint Details - Hostelocity{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="page-title"><i class="bi bi-file-text"></i> Complaint Details</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> {{ complaint.subject }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Category:</strong> 
+                            <span class="badge bg-secondary">{{ complaint.get_category_display }}</span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            {% if complaint.status == 'pending' %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% elif complaint.status == 'in_progress' %}
+                            <span class="badge bg-info">In Progress</span>
+                            {% else %}
+                            <span class="badge bg-success">Resolved</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Submitted On:</strong> {{ complaint.created_at|date:"M d, Y - h:i A" }}</p>
+                    </div>
+                    {% if complaint.resolved_at %}
+                    <div class="col-md-6">
+                        <p><strong>Resolved On:</strong> {{ complaint.resolved_at|date:"M d, Y - h:i A" }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <h6 class="text-muted">Description:</h6>
+                    <p style="white-space: pre-wrap;">{{ complaint.description }}</p>
+                </div>
+                
+                {% if complaint.admin_response %}
+                <hr>
+                <div class="mb-3">
+                    <h6 class="text-muted">Admin Response:</h6>
+                    <div class="alert alert-info">
+                        <p style="white-space: pre-wrap;">{{ complaint.admin_response }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'complaint_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                    {% if complaint.status != 'resolved' %}
+                    <a href="{% url 'complaint_delete' complaint.pk %}" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Complaint
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Status Information</h5>
+            </div>
+            <div class="card-body">
+                {% if complaint.status == 'pending' %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-clock-history"></i>
+                    <strong>Pending</strong>
+                    <p class="mb-0 mt-2">Your complaint is waiting to be reviewed by the administration.</p>
+                </div>
+                {% elif complaint.status == 'in_progress' %}
+                <div class="alert alert-info">
+                    <i class="bi bi-tools"></i>
+                    <strong>In Progress</strong>
+                    <p class="mb-0 mt-2">Your complaint is currently being addressed.</p>
+                </div>
+                {% else %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Resolved</strong>
+                    <p class="mb-0 mt-2">Your complaint has been resolved.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'complaint_add' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Submit New Complaint
+                    </a>
+                    <a href="{% url 'complaint_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-list-ul"></i> View All Complaints
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

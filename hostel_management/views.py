@@ -34,14 +34,12 @@ def login_view(request):
             if login_type == 'admin':
                 if user.is_superuser or (hasattr(user, 'profile') and user.profile.role == 'admin'):
                     login(request, user)
-                    messages.success(request, f'Welcome back, {user.username}!')
                     return redirect('dashboard')
                 else:
                     messages.error(request, 'You do not have admin privileges.')
             else:  # student login
                 if hasattr(user, 'profile') and user.profile.role == 'student':
                     login(request, user)
-                    messages.success(request, f'Welcome back, {user.username}!')
                     return redirect('dashboard')
                 else:
                     messages.error(request, 'You do not have student privileges.')
@@ -57,7 +55,6 @@ def login_view(request):
 def logout_view(request):
     """Logout view"""
     logout(request)
-    messages.success(request, 'You have been logged out successfully.')
     return redirect('login')
 
 
@@ -162,16 +159,29 @@ def dashboard(request):
                     student_profile = StudentProfile.objects.create(student=student)
                 
                 my_complaints = Complaint.objects.filter(student=student).order_by('-created_at')[:5]
-                my_payments = Fee.objects.filter(studentid=student).order_by('-duedate')[:5]
-                pending_payments = Fee.objects.filter(studentid=student, status='Pending').count()
+                
+                # Get pending/overdue payments (not paid)
+                pending_payments_list = Fee.objects.filter(
+                    studentid=student
+                ).exclude(
+                    status__iexact='paid'
+                ).order_by('-duedate')[:5]
+                pending_payments_count = Fee.objects.filter(studentid=student).exclude(status__iexact='paid').count()
+                
+                # Get only paid payments for recent payments
+                paid_payments = Fee.objects.filter(
+                    studentid=student, 
+                    status__iexact='paid'
+                ).order_by('-duedate')[:5]
                 
                 context = {
                     'role': role,
                     'student': student,
                     'student_profile': student_profile,
                     'my_complaints': my_complaints,
-                    'my_payments': my_payments,
-                    'pending_payments': pending_payments,
+                    'pending_payments_list': pending_payments_list,
+                    'pending_payments_count': pending_payments_count,
+                    'paid_payments': paid_payments,
                 }
                 return render(request, 'dashboard_student.html', context)
             else:
