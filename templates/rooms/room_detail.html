@@ -1,8 +1,10 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Room {{ room.room_number }} - Hostel Management System{% endblock %}
+{% block title %}Room {{ room.roomnumber }} - HostelGrid{% endblock %}
 
 {% block content %}
+<h1 class="page-title">Room {{ room.roomnumber }} - {{ room.hostelid.name }}</h1>
+
 <div class="row">
     <div class="col-md-6">
         <div class="card">
@@ -20,34 +22,34 @@
                 {% endif %}
             </div>
             <div class="card-body">
-                <table class="table">
+                <table class="table" style="color: var(--text-primary);">
                     <tr>
-                        <th width="40%">Room Number:</th>
-                        <td><strong>{{ room.room_number }}</strong></td>
+                        <th width="40%" style="color: var(--text-primary);">Room Number:</th>
+                        <td style="color: var(--text-primary);"><strong>{{ room.roomnumber }}</strong></td>
                     </tr>
                     <tr>
-                        <th>Type:</th>
-                        <td>{{ room.get_room_type_display }}</td>
+                        <th style="color: var(--text-primary);">Hostel:</th>
+                        <td style="color: var(--text-primary);">{{ room.hostelid.name }}</td>
                     </tr>
                     <tr>
-                        <th>Floor:</th>
-                        <td>{{ room.floor }}</td>
+                        <th style="color: var(--text-primary);">Type:</th>
+                        <td style="color: var(--text-primary);">{{ room.type|default:"N/A" }}</td>
                     </tr>
                     <tr>
-                        <th>Capacity:</th>
-                        <td>{{ room.capacity }}</td>
+                        <th style="color: var(--text-primary);">Capacity:</th>
+                        <td style="color: var(--text-primary);">{{ room.capacity }}</td>
                     </tr>
                     <tr>
-                        <th>Current Occupancy:</th>
-                        <td>{{ room.current_occupancy }}</td>
+                        <th style="color: var(--text-primary);">Current Occupancy:</th>
+                        <td style="color: var(--text-primary);">{{ room.current_occupancy }}</td>
                     </tr>
                     <tr>
-                        <th>Available Spaces:</th>
-                        <td>{{ room.available_spaces }}</td>
+                        <th style="color: var(--text-primary);">Available Spaces:</th>
+                        <td style="color: var(--text-primary);">{{ room.available_spaces }}</td>
                     </tr>
                     <tr>
-                        <th>Status:</th>
-                        <td>
+                        <th style="color: var(--text-primary);">Status:</th>
+                        <td style="color: var(--text-primary);">
                             {% if room.is_full %}
                             <span class="badge bg-danger">Full</span>
                             {% else %}
@@ -55,16 +57,12 @@
                             {% endif %}
                         </td>
                     </tr>
-                    <tr>
-                        <th>Description:</th>
-                        <td>{{ room.description|default:"N/A" }}</td>
-                    </tr>
                 </table>
                 
                 <div class="mb-3">
-                    <h6>Occupancy Status:</h6>
+                    <h6 style="color: var(--text-primary);">Occupancy Status:</h6>
                     {% with percentage=room.occupancy_percentage %}
-                    <div class="progress" style="height: 30px;">
+                    <div class="progress" style="height: 30px; background: rgba(255, 255, 255, 0.1);">
                         <div class="progress-bar {% if percentage >= 100 %}bg-danger{% elif percentage >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
                              role="progressbar" 
                              aria-valuenow="{{ percentage }}" 
@@ -93,23 +91,23 @@
                 {% if students %}
                 <ul class="list-group">
                     {% for student in students %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.1);">
                         <div>
                             {% if student.photo %}
                             <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                             {% else %}
-                            <i class="bi bi-person-circle me-2" style="font-size: 2rem; color: #667eea;"></i>
+                            <i class="bi bi-person-circle me-2" style="font-size: 2rem; color: var(--brand-yellow);"></i>
                             {% endif %}
-                            <strong>{{ student.name }}</strong>
+                            <strong style="color: var(--text-primary);">{{ student.name }}</strong>
                             <br>
-                            <small class="text-muted">{{ student.roll_number }}</small>
+                            <small style="color: var(--text-secondary);">ID: {{ student.studentid }}</small>
                         </div>
                         <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-primary">View</a>
                     </li>
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p class="text-muted mb-0">No students assigned to this room yet.</p>
+                <p style="color: var(--text-muted);" class="mb-0">No students assigned to this room yet.</p>
                 {% endif %}
             </div>
         </div>

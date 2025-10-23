@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Complaints - Hostel Management System{% endblock %}
+{% block title %}Complaints - HostelGrid{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -50,7 +50,7 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ complaint.created_at|date:"M d, Y" }}</td>
-                                <td>
+                                <td style="white-space: nowrap;">
                                     <a href="{% url 'complaint_detail' complaint.pk %}" class="btn btn-sm btn-info" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>

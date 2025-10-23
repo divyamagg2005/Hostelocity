@@ -1,8 +1,10 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}{{ student.name }} - Hostel Management System{% endblock %}
+{% block title %}{{ student.name }} - HostelGrid{% endblock %}
 
 {% block content %}
+<h1 class="page-title">{{ student.name }}</h1>
+
 <div class="row">
     <div class="col-md-4">
         <div class="card">
@@ -10,17 +12,12 @@
                 {% if student.photo %}
                 <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="img-fluid rounded-circle mb-3" style="width: 200px; height: 200px; object-fit: cover;">
                 {% else %}
-                <div class="mb-3" style="font-size: 8rem; color: #667eea;">
+                <div class="mb-3" style="font-size: 8rem; color: var(--brand-yellow);">
                     <i class="bi bi-person-circle"></i>
                 </div>
                 {% endif %}
-                <h3>{{ student.name }}</h3>
-                <p class="text-muted">{{ student.roll_number }}</p>
-                {% if student.is_active %}
-                <span class="badge bg-success">Active</span>
-                {% else %}
-                <span class="badge bg-secondary">Inactive</span>
-                {% endif %}
+                <h3 style="color: var(--text-primary);">{{ student.name }}</h3>
+                <p style="color: var(--text-secondary);">ID: {{ student.studentid }}</p>
             </div>
         </div>
     </div>
@@ -41,48 +38,74 @@
                 {% endif %}
             </div>
             <div class="card-body">
-                <table class="table">
+                <table class="table" style="color: var(--text-primary);">
                     <tr>
-                        <th width="30%">Name:</th>
-                        <td>{{ student.name }}</td>
+                        <th width="30%" style="color: var(--text-primary);">Name:</th>
+                        <td style="color: var(--text-primary);">{{ student.name }}</td>
                     </tr>
                     <tr>
-                        <th>Roll Number:</th>
-                        <td>{{ student.roll_number }}</td>
+                        <th style="color: var(--text-primary);">Student ID:</th>
+                        <td style="color: var(--text-primary);">{{ student.studentid }}</td>
                     </tr>
                     <tr>
-                        <th>Course:</th>
-                        <td>{{ student.course }}</td>
+                        <th style="color: var(--text-primary);">Gender:</th>
+                        <td style="color: var(--text-primary);">{{ student.gender|default:"Not Specified" }}</td>
                     </tr>
                     <tr>
-                        <th>Year:</th>
-                        <td>{{ student.get_year_display }}</td>
+                        <th style="color: var(--text-primary);">Department:</th>
+                        <td style="color: var(--text-primary);">{{ student.get_department_display|default:"Not Specified" }}</td>
                     </tr>
                     <tr>
-                        <th>Email:</th>
-                        <td>{{ student.email }}</td>
+                        <th style="color: var(--text-primary);">Phone:</th>
+                        <td style="color: var(--text-primary);">{{ student.phone|default:"Not Provided" }}</td>
+                    </tr>
+                    {% if student.profile %}
+                    <tr>
+                        <th style="color: var(--text-primary);">Date of Birth:</th>
+                        <td style="color: var(--text-primary);">{{ student.profile.date_of_birth|date:"M d, Y"|default:"Not Provided" }}</td>
                     </tr>
                     <tr>
-                        <th>Phone:</th>
-                        <td>{{ student.phone }}</td>
+                        <th style="color: var(--text-primary);">Address:</th>
+                        <td style="color: var(--text-primary);">{{ student.profile.address|default:"Not Provided" }}</td>
                     </tr>
                     <tr>
-                        <th>Address:</th>
-                        <td>{{ student.address }}</td>
+                        <th style="color: var(--text-primary);">Father's Name:</th>
+                        <td style="color: var(--text-primary);">{{ student.profile.father_name|default:"Not Provided" }}</td>
                     </tr>
                     <tr>
-                        <th>Room:</th>
-                        <td>
-                            {% if student.room %}
-                            <a href="{% url 'room_detail' student.room.pk %}">{{ student.room.room_number }}</a>
-                            {% else %}
-                            Not Assigned
-                            {% endif %}
+                        <th style="color: var(--text-primary);">Mother's Name:</th>
+                        <td style="color: var(--text-primary);">{{ student.profile.mother_name|default:"Not Provided" }}</td>
+                    </tr>
+                    <tr>
+                        <th style="color: var(--text-primary);">Hostel Mess:</th>
+                        <td style="color: var(--text-primary);">{{ student.profile.hostel_mess|default:"Not Assigned" }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <th style="color: var(--text-primary);">Room:</th>
+                        <td style="color: var(--text-primary);">
+                            {% with current_room=student.get_current_room %}
+                                {% if current_room %}
+                                    <a href="{% url 'room_detail' current_room.pk %}" style="color: var(--brand-yellow);">
+                                        {{ current_room.hostelid.name }} - Room {{ current_room.roomnumber }}
+                                    </a>
+                                {% else %}
+                                    Not Assigned
+                                {% endif %}
+                            {% endwith %}
                         </td>
                     </tr>
                     <tr>
-                        <th>Date of Admission:</th>
-                        <td>{{ student.date_of_admission|date:"M d, Y" }}</td>
+                        <th style="color: var(--text-primary);">Date of Allocation:</th>
+                        <td style="color: var(--text-primary);">
+                            {% with allocation=student.get_current_allocation %}
+                                {% if allocation %}
+                                    {{ allocation.date_of_allocation|date:"M d, Y" }}
+                                {% else %}
+                                    Not Allocated
+                                {% endif %}
+                            {% endwith %}
+                        </td>
                     </tr>
                 </table>
                 <a href="{% url 'student_list' %}" class="btn btn-secondary">
@@ -93,3 +116,4 @@
     </div>
 </div>
 {% endblock %}
+

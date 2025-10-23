@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Room Allocations - Hostel Management System{% endblock %}
+{% block title %}Room Allocations - HostelGrid{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -37,7 +37,7 @@
                                 <td>{{ allocation.room.roomnumber }}</td>
                                 <td>{{ allocation.room.hostelid.name }}</td>
                                 <td>{{ allocation.date_of_allocation|date:"M d, Y"|default:"-" }}</td>
-                                <td>
+                                <td style="white-space: nowrap;">
                                     <a href="{% url 'student_detail' allocation.student.pk %}" class="btn btn-sm btn-info" title="View Student">
                                         <i class="bi bi-eye"></i>
                                     </a>

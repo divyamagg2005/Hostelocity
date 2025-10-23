@@ -51,11 +51,29 @@ class AllocationForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Show only available rooms
+        # Show only available rooms (rooms that are not full)
         from rooms.models import Room
-        allocated_room_ids = Allocation.objects.values_list('room_id', flat=True)
-        self.fields['room'].queryset = Room.objects.exclude(
-            roomid__in=allocated_room_ids
+        from django.db.models import Count
+        
+        # Get all rooms and filter to show only those with available beds
+        available_rooms = []
+        all_rooms = Room.objects.select_related('hostelid').all()
+        
+        for room in all_rooms:
+            # Count current allocations for this room
+            current_allocations = Allocation.objects.filter(room=room).count()
+            # Only include rooms with available beds
+            if current_allocations < room.capacity:
+                available_rooms.append(room.roomid)
+        
+        self.fields['room'].queryset = Room.objects.filter(
+            roomid__in=available_rooms
+        ).select_related('hostelid')
+        
+        # Customize room display to show availability
+        self.fields['room'].label_from_instance = lambda obj: (
+            f"{obj.hostelid.name} - Room {obj.roomnumber} "
+            f"({obj.capacity - Allocation.objects.filter(room=obj).count()}/{obj.capacity} available)"
         )
 
 

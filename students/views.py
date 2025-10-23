@@ -98,11 +98,23 @@ def student_detail(request, pk):
         messages.error(request, 'You do not have permission to view this page.')
         return redirect('dashboard')
     
+    # Get allocations and current allocation
     allocations = student.allocations.all()
+    current_allocation = student.get_current_allocation()
+    current_room = student.get_current_room()
+    
+    # Try to get student profile
+    try:
+        profile = student.profile
+    except:
+        profile = None
     
     context = {
         'student': student,
         'allocations': allocations,
+        'current_allocation': current_allocation,
+        'current_room': current_room,
+        'profile': profile,
     }
     return render(request, 'students/student_detail.html', context)
 

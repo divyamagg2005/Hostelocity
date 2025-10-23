@@ -109,11 +109,21 @@ def dashboard(request):
         # Admin dashboard with statistics
         total_students = Student.objects.count()
         total_rooms = Room.objects.count()
-        # Count occupied rooms (rooms with allocations)
+        
+        # Count occupied and available rooms correctly
+        # Occupied = completely full (current_occupancy == capacity)
+        # Available = has at least one bed free (current_occupancy < capacity)
         from students.models import Allocation
-        occupied_room_ids = Allocation.objects.values_list('room_id', flat=True).distinct()
-        occupied_rooms = len(occupied_room_ids)
-        available_rooms = total_rooms - occupied_rooms
+        occupied_rooms = 0
+        available_rooms = 0
+        
+        all_rooms = Room.objects.all()
+        for room in all_rooms:
+            current_occupancy = Allocation.objects.filter(room=room).count()
+            if current_occupancy >= room.capacity:
+                occupied_rooms += 1
+            else:
+                available_rooms += 1
         
         pending_complaints = Complaint.objects.filter(status='pending').count()
         
@@ -125,8 +135,23 @@ def dashboard(request):
         # Recent complaints
         recent_complaints = Complaint.objects.all().order_by('-created_at')[:5]
         
-        # Recent students (limit to 4 to prevent UI overflow)
-        recent_students = Student.objects.all().order_by('-studentid')[:4]
+        # Get empty/available rooms (rooms that are not fully occupied)
+        from django.db.models import Count
+        empty_rooms = []
+        all_rooms = Room.objects.select_related('hostelid').all()
+        
+        for room in all_rooms:
+            # Count current allocations for this room
+            current_allocations = Allocation.objects.filter(room=room).count()
+            available_beds = room.capacity - current_allocations
+            
+            # Only include rooms with available beds
+            if available_beds > 0:
+                room.available_beds = available_beds
+                empty_rooms.append(room)
+        
+        # Limit to 5 rooms for display
+        empty_rooms = empty_rooms[:5]
         
         context = {
             'role': role,
@@ -137,7 +162,7 @@ def dashboard(request):
             'pending_complaints': pending_complaints,
             'fees_collected': fees_collected,
             'recent_complaints': recent_complaints,
-            'recent_students': recent_students,
+            'empty_rooms': empty_rooms,
         }
         return render(request, 'dashboard_admin.html', context)
     

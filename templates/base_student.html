@@ -109,29 +109,10 @@
             border: 1px solid var(--glass-border);
             box-shadow: 0 4px 16px var(--shadow-color);
             z-index: 1000;
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: visible;
             padding: 24px 16px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-sizing: border-box;
-        }
-
-        .glass-sidebar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .glass-sidebar::-webkit-scrollbar-track {
-            background: var(--glass-bg);
-            border-radius: 10px;
-        }
-
-        .glass-sidebar::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 10px;
-        }
-
-        .glass-sidebar::-webkit-scrollbar-thumb:hover {
-            background: var(--hover-bg);
         }
 
         /* Sidebar Header with Logo and Theme Toggle */
@@ -620,6 +601,23 @@
 
         .table-hover tbody tr:hover {
             background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table tbody td {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table thead th {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Remove all white backgrounds from tables */
+        .table, .table > thead, .table > tbody, .table > tfoot, 
+        .table > thead > tr, .table > tbody > tr, .table > tfoot > tr,
+        .table > thead > tr > th, .table > tbody > tr > td, .table > tfoot > tr > td {
+            background-color: transparent !important;
         }
 
         /* Remove white backgrounds from table rows */

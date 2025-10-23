@@ -124,7 +124,7 @@ class Allocation(models.Model):
     date_of_allocation = models.DateField(db_column='date_of_allocation', blank=True, null=True)
     
     def __str__(self):
-        return f"{self.student.name} - {self.room.room_number}"
+        return f"{self.student.name} - Room {self.room.roomnumber}"
     
     class Meta:
         db_table = 'allocation'

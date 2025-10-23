@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Payments - Hostel Management System{% endblock %}
+{% block title %}Payments - HostelGrid{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -54,7 +54,7 @@
                                     <span class="badge bg-warning">Not Paid</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td style="white-space: nowrap;">
                                     <a href="{% url 'payment_detail' payment.pk %}" class="btn btn-sm btn-info" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
