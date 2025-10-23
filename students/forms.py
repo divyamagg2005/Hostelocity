@@ -1,5 +1,62 @@
 from django import forms
-from .models import StudentProfile
+from .models import StudentProfile, Student, Allocation
+
+
+class StudentForm(forms.ModelForm):
+    """Form for admin to add/edit students"""
+    
+    class Meta:
+        model = Student
+        fields = ['name', 'gender', 'department', 'phone']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter student name'
+            }),
+            'gender': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'department': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter phone number'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['name'].required = True
+
+
+class AllocationForm(forms.ModelForm):
+    """Form for admin to allocate rooms to students"""
+    
+    class Meta:
+        model = Allocation
+        fields = ['student', 'room', 'date_of_allocation']
+        widgets = {
+            'student': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'room': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'date_of_allocation': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Show only available rooms
+        from rooms.models import Room
+        allocated_room_ids = Allocation.objects.values_list('room_id', flat=True)
+        self.fields['room'].queryset = Room.objects.exclude(
+            roomid__in=allocated_room_ids
+        )
 
 
 class StudentProfileForm(forms.ModelForm):
