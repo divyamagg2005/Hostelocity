@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Payments - Hostel Management System{% endblock %}
+{% block title %}Payments - HostelGrid{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -24,7 +24,9 @@
                                 <th>Student ID</th>
                                 <th>Student Name</th>
                                 {% endif %}
+                                <th>Payment Type</th>
                                 <th>Amount</th>
+                                <th>Due Date</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -36,7 +38,15 @@
                                 <td>{{ payment.studentid.studentid }}</td>
                                 <td>{{ payment.studentid.name }}</td>
                                 {% endif %}
+                                <td>
+                                    {% if payment.payment_record %}
+                                        {{ payment.payment_record.payment_type }}
+                                    {% else %}
+                                        General Payment
+                                    {% endif %}
+                                </td>
                                 <td><strong>₹{{ payment.amount }}</strong></td>
+                                <td>{{ payment.due_date|date:"M d, Y" }}</td>
                                 <td>
                                     {% if payment.status == 'Paid' %}
                                     <span class="badge bg-success">Paid</span>
@@ -44,7 +54,7 @@
                                     <span class="badge bg-warning">Not Paid</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td style="white-space: nowrap;">
                                     <a href="{% url 'payment_detail' payment.pk %}" class="btn btn-sm btn-info" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>

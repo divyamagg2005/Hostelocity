@@ -23,27 +23,42 @@ def complaint_list(request):
     if is_admin(request.user):
         # Admin sees all complaints
         complaints = Complaint.objects.all()
+        template = 'complaints/complaint_list.html'
     else:
         # Student sees only their complaints
         try:
-            student = Student.objects.get(user=request.user)
-            complaints = Complaint.objects.filter(student=student)
-        except Student.DoesNotExist:
+            # Try to find student by username matching
+            student = Student.objects.filter(name__icontains=request.user.username).first()
+            if not student:
+                # If no exact match, try to find by user profile or create a basic student record
+                student = Student.objects.filter(studentid=request.user.id).first()
+            
+            if student:
+                complaints = Complaint.objects.filter(student=student)
+            else:
+                complaints = []
+                messages.warning(request, 'Student profile not found.')
+        except Exception as e:
             complaints = []
-            messages.warning(request, 'Student profile not found.')
+            messages.warning(request, f'Error finding student profile: {str(e)}')
+        template = 'complaints/student_complaint_list.html'
     
     context = {
         'complaints': complaints,
     }
-    return render(request, 'complaints/complaint_list.html', context)
+    return render(request, template, context)
 
 
 @login_required
 def complaint_add(request):
     """Add new complaint (students only)"""
-    try:
-        student = Student.objects.get(user=request.user)
-    except Student.DoesNotExist:
+    # Try to find student by username matching
+    student = Student.objects.filter(name__icontains=request.user.username).first()
+    if not student:
+        # If no exact match, try to find by user profile or create a basic student record
+        student = Student.objects.filter(studentid=request.user.id).first()
+    
+    if not student:
         messages.error(request, 'Student profile not found. Please contact admin.')
         return redirect('dashboard')
     
@@ -58,11 +73,17 @@ def complaint_add(request):
     else:
         form = ComplaintForm()
     
+    # Determine template based on user role
+    if is_admin(request.user):
+        template = 'complaints/complaint_form.html'
+    else:
+        template = 'complaints/student_complaint_form.html'
+    
     context = {
         'form': form,
         'title': 'Submit Complaint',
     }
-    return render(request, 'complaints/complaint_form.html', context)
+    return render(request, template, context)
 
 
 @login_required
@@ -70,21 +91,30 @@ def complaint_detail(request, pk):
     """View complaint details"""
     complaint = get_object_or_404(Complaint, pk=pk)
     
-    # Check permissions
-    if not is_admin(request.user):
-        try:
-            student = Student.objects.get(user=request.user)
-            if complaint.student != student:
-                messages.error(request, 'You do not have permission to view this complaint.')
-                return redirect('complaint_list')
-        except Student.DoesNotExist:
+    # Check permissions and determine template
+    if is_admin(request.user):
+        template = 'complaints/complaint_detail.html'
+    else:
+        # Try to find student by username matching
+        student = Student.objects.filter(name__icontains=request.user.username).first()
+        if not student:
+            # If no exact match, try to find by user profile or create a basic student record
+            student = Student.objects.filter(studentid=request.user.id).first()
+        
+        if not student:
             messages.error(request, 'Student profile not found.')
             return redirect('dashboard')
+        
+        if complaint.student != student:
+            messages.error(request, 'You do not have permission to view this complaint.')
+            return redirect('complaint_list')
+        
+        template = 'complaints/student_complaint_detail.html'
     
     context = {
         'complaint': complaint,
     }
-    return render(request, 'complaints/complaint_detail.html', context)
+    return render(request, template, context)
 
 
 @login_required
@@ -132,10 +162,20 @@ def complaint_resolve(request, pk):
 
 
 @login_required
-@user_passes_test(is_admin)
 def complaint_delete(request, pk):
-    """Delete complaint (admin only)"""
+    """Delete complaint (students can delete their own, admins can delete any)"""
     complaint = get_object_or_404(Complaint, pk=pk)
+    
+    # Check permissions
+    if not is_admin(request.user):
+        # Students can only delete their own complaints
+        student = Student.objects.filter(name__icontains=request.user.username).first()
+        if not student:
+            student = Student.objects.filter(studentid=request.user.id).first()
+        
+        if not student or complaint.student != student:
+            messages.error(request, 'You do not have permission to delete this complaint.')
+            return redirect('complaint_list')
     
     if request.method == 'POST':
         complaint.delete()

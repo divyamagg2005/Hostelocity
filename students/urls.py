@@ -13,4 +13,7 @@ urlpatterns = [
     path('allocations/', views.allocation_list, name='allocation_list'),
     path('allocations/add/', views.allocation_add, name='allocation_add'),
     path('allocations/<int:pk>/delete/', views.allocation_delete, name='allocation_delete'),
+    
+    # Student Profile URLs
+    path('profile/edit/', views.student_profile_edit, name='student_profile_edit'),
 ]

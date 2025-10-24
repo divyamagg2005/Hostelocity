@@ -1,18 +1,18 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Admin Dashboard - Hostel Management System{% endblock %}
+{% block title %}Admin Dashboard - HostelGrid{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h2 class="text-white mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+        <h2 class="page-title"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
     </div>
 </div>
 
 <!-- Statistics Cards -->
 <div class="row">
     <div class="col-md-3">
-        <div class="card stat-card" style="border-left-color: #3498db;">
+        <div class="card stat-card h-100" style="border-left-color: #3498db;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -28,7 +28,7 @@
     </div>
     
     <div class="col-md-3">
-        <div class="card stat-card" style="border-left-color: #e74c3c;">
+        <div class="card stat-card h-100" style="border-left-color: #e74c3c;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -44,7 +44,7 @@
     </div>
     
     <div class="col-md-3">
-        <div class="card stat-card" style="border-left-color: #f39c12;">
+        <div class="card stat-card h-100" style="border-left-color: #f39c12;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -60,14 +60,14 @@
     </div>
     
     <div class="col-md-3">
-        <div class="card stat-card" style="border-left-color: #27ae60;">
+        <div class="card stat-card h-100" style="border-left-color: #27ae60;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
-                    <div>
+                    <div style="flex: 1; min-width: 0; padding-right: 10px;">
                         <h6 class="text-muted mb-1">Fees Collected</h6>
-                        <h2 class="mb-0">₹{{ fees_collected }}</h2>
+                        <h2 class="mb-0" id="fees-amount" style="white-space: nowrap; overflow: hidden; line-height: 1.2;">₹{{ fees_collected }}</h2>
                     </div>
-                    <div class="text-success" style="font-size: 3rem;">
+                    <div class="text-success" style="font-size: 3rem; flex-shrink: 0;">
                         <i class="bi bi-cash-stack"></i>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
                 {% if recent_complaints %}
                 <div class="table-responsive flex-grow-1" style="max-height: 300px; overflow-y: auto;">
                     <table class="table table-hover">
-                        <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                        <thead style="position: sticky; top: 0; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); z-index: 1;">
                             <tr>
                                 <th>Student</th>
                                 <th>Subject</th>
@@ -126,32 +126,30 @@
     <div class="col-md-6">
         <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-people"></i> Recent Students</h5>
+                <h5 class="mb-0"><i class="bi bi-door-open"></i> Empty Rooms</h5>
             </div>
             <div class="card-body d-flex flex-column">
-                {% if recent_students %}
+                {% if empty_rooms %}
                 <div class="table-responsive flex-grow-1" style="max-height: 300px; overflow-y: auto;">
                     <table class="table table-hover">
-                        <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                        <thead style="position: sticky; top: 0; background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); z-index: 1;">
                             <tr>
-                                <th>Name</th>
-                                <th>Student ID</th>
-                                <th>Room</th>
+                                <th>Room Number</th>
+                                <th>Hostel</th>
+                                <th>Capacity</th>
+                                <th>Available</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for student in recent_students %}
+                            {% for room in empty_rooms %}
                             <tr>
-                                <td>{{ student.name }}</td>
-                                <td>{{ student.studentid }}</td>
+                                <td>{{ room.roomnumber }}</td>
+                                <td>{{ room.hostelid.name }}</td>
+                                <td>{{ room.capacity }}</td>
                                 <td>
-                                    {% with current_room=student.get_current_room %}
-                                        {% if current_room %}
-                                            {{ current_room.roomnumber }}
-                                        {% else %}
-                                            Not Assigned
-                                        {% endif %}
-                                    {% endwith %}
+                                    <span class="badge bg-success">
+                                        {{ room.available_beds }} Bed{% if room.available_beds != 1 %}s{% endif %}
+                                    </span>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -159,10 +157,10 @@
                     </table>
                 </div>
                 <div class="mt-2">
-                    <a href="{% url 'student_list' %}" class="btn btn-sm btn-primary">View All</a>
+                    <a href="{% url 'allocation_add' %}" class="btn btn-sm btn-primary">Allocate Room</a>
                 </div>
                 {% else %}
-                <p class="text-muted mb-0">No students yet.</p>
+                <p class="text-muted mb-0">All rooms are fully occupied.</p>
                 {% endif %}
             </div>
         </div>
@@ -186,11 +184,54 @@
                 <a href="{% url 'payment_add' %}" class="btn btn-info me-2 mb-2">
                     <i class="bi bi-credit-card"></i> Add Payment
                 </a>
-                <a href="{% url 'complaint_list' %}" class="btn btn-warning mb-2">
-                    <i class="bi bi-exclamation-circle"></i> View Complaints
+                <a href="{% url 'hostel_add' %}" class="btn btn-warning mb-2">
+                    <i class="bi bi-building"></i> Add Hostel
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Dynamic font sizing for Fees Collected to keep card aligned
+    function adjustFeesAmount() {
+        const element = document.getElementById('fees-amount');
+        if (!element) return;
+        
+        const container = element.parentElement;
+        const text = element.textContent;
+        const textLength = text.replace('₹', '').replace(/,/g, '').length;
+        
+        // Reset to default size
+        let fontSize = 2.5; // Default rem size from stat-card h2
+        
+        // Adjust based on text length
+        if (textLength > 12) {
+            fontSize = 1.6;
+        } else if (textLength > 10) {
+            fontSize = 1.8;
+        } else if (textLength > 8) {
+            fontSize = 2.0;
+        } else if (textLength > 6) {
+            fontSize = 2.2;
+        }
+        
+        element.style.fontSize = fontSize + 'rem';
+        
+        // Fine-tune if still overflowing
+        let iterations = 0;
+        while (element.scrollWidth > container.clientWidth && fontSize > 1.2 && iterations < 20) {
+            fontSize -= 0.1;
+            element.style.fontSize = fontSize + 'rem';
+            iterations++;
+        }
+    }
+    
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', adjustFeesAmount);
+    
+    // Run on window resize
+    window.addEventListener('resize', adjustFeesAmount);
+</script>
+
 {% endblock %}

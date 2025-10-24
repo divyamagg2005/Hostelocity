@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Payment Details - Hostel Management System{% endblock %}
+{% block title %}Payment Details - HostelGrid{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -29,8 +29,22 @@
                         <td>{{ payment.studentid.name }} (ID: {{ payment.studentid.studentid }})</td>
                     </tr>
                     <tr>
+                        <th>Payment Type:</th>
+                        <td>
+                            {% if payment.payment_record %}
+                                <span class="badge bg-primary">{{ payment.payment_record.payment_type }}</span>
+                            {% else %}
+                                <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
                         <th>Amount:</th>
                         <td><strong class="text-success">₹{{ payment.amount }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Due Date:</th>
+                        <td>{{ payment.duedate|date:"M d, Y"|default:"Not specified" }}</td>
                     </tr>
                     <tr>
                         <th>Status:</th>

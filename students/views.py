@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from .models import Student, Allocation
-from .forms import StudentForm, AllocationForm
+from .models import Student, Allocation, StudentProfile
+from .forms import StudentForm, AllocationForm, StudentProfileForm
 from datetime import date
 
 
@@ -98,11 +98,23 @@ def student_detail(request, pk):
         messages.error(request, 'You do not have permission to view this page.')
         return redirect('dashboard')
     
+    # Get allocations and current allocation
     allocations = student.allocations.all()
+    current_allocation = student.get_current_allocation()
+    current_room = student.get_current_room()
+    
+    # Try to get student profile
+    try:
+        profile = student.profile
+    except:
+        profile = None
     
     context = {
         'student': student,
         'allocations': allocations,
+        'current_allocation': current_allocation,
+        'current_room': current_room,
+        'profile': profile,
     }
     return render(request, 'students/student_detail.html', context)
 
@@ -157,3 +169,39 @@ def allocation_delete(request, pk):
         'allocation': allocation,
     }
     return render(request, 'students/allocation_confirm_delete.html', context)
+
+
+@login_required
+def student_profile_edit(request):
+    """Edit student profile (students only)"""
+    # Try to find student by username matching
+    student = Student.objects.filter(name__icontains=request.user.username).first()
+    if not student:
+        # If no exact match, try to find by user profile or create a basic student record
+        student = Student.objects.filter(studentid=request.user.id).first()
+    
+    if not student:
+        messages.error(request, 'Student profile not found. Please contact admin.')
+        return redirect('dashboard')
+    
+    # Get or create student profile
+    try:
+        student_profile = StudentProfile.objects.get(student=student)
+    except StudentProfile.DoesNotExist:
+        student_profile = StudentProfile.objects.create(student=student)
+    
+    if request.method == 'POST':
+        form = StudentProfileForm(request.POST, instance=student_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully!')
+            return redirect('dashboard')
+    else:
+        form = StudentProfileForm(instance=student_profile)
+    
+    context = {
+        'form': form,
+        'title': 'Edit Profile',
+        'student': student,
+    }
+    return render(request, 'students/student_profile_edit.html', context)

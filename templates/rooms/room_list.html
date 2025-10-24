@@ -1,8 +1,14 @@
-{% extends 'base.html' %}
+{% extends 'base_admin.html' %}
 
-{% block title %}Rooms - Hostel Management System{% endblock %}
+{% block title %}Rooms - HostelGrid{% endblock %}
 
 {% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="page-title"><i class="bi bi-door-open"></i> Rooms</h2>
+    </div>
+</div>
+
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
@@ -18,20 +24,20 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="text-center">
-                            <h2 class="text-primary">{{ total_rooms }}</h2>
-                            <p class="text-muted">Total Rooms</p>
+                            <h2 style="color: #3B82F6;">{{ total_rooms }}</h2>
+                            <p style="color: var(--text-secondary);">Total Rooms</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="text-center">
-                            <h2 class="text-danger">{{ occupied_rooms }}</h2>
-                            <p class="text-muted">Occupied</p>
+                            <h2 style="color: #EF4444;">{{ occupied_rooms }}</h2>
+                            <p style="color: var(--text-secondary);">Occupied (Full)</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="text-center">
-                            <h2 class="text-success">{{ available_rooms }}</h2>
-                            <p class="text-muted">Available</p>
+                            <h2 style="color: #10B981;">{{ available_rooms }}</h2>
+                            <p style="color: var(--text-secondary);">Available</p>
                         </div>
                     </div>
                 </div>
@@ -47,68 +53,73 @@
                 <h5 class="mb-0"><i class="bi bi-list"></i> All Rooms</h5>
             </div>
             <div class="card-body">
-                {% if rooms %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Room Number</th>
-                                <th>Hostel Name</th>
-                                <th>Location</th>
-                                <th>Capacity</th>
-                                <th>Occupancy</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for room in rooms %}
-                            <tr>
-                                <td><strong>{{ room.roomnumber }}</strong></td>
-                                <td>{{ room.hostelid.name|default:"-" }}</td>
-                                <td>{{ room.hostelid.location|default:"-" }}</td>
-                                <td>{{ room.capacity }}</td>
-                                <td>
-                                    {% with percentage=room.occupancy_percentage %}
-                                    <div class="progress" style="height: 25px;">
-                                        <div class="progress-bar {% if percentage >= 100 %}bg-danger{% elif percentage >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
-                                             role="progressbar" 
-                                             aria-valuenow="{{ percentage }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100"
-                                             style="width: {{ percentage|floatformat:0 }}%">
-                                            {{ room.current_occupancy }}/{{ room.capacity }}
-                                        </div>
-                                    </div>
-                                    {% endwith %}
-                                </td>
-                                <td>
-                                    {% if room.is_full %}
-                                    <span class="badge bg-danger">Full</span>
-                                    {% else %}
-                                    <span class="badge bg-success">Available</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{% url 'room_detail' room.pk %}" class="btn btn-sm btn-info" title="View">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% if user.is_superuser or user.profile.role == 'admin' %}
-                                    <a href="{% url 'room_edit' room.pk %}" class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a href="{% url 'room_delete' room.pk %}" class="btn btn-sm btn-danger" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                {% if grouped_rooms %}
+                    {% for hostel_name, hostel_rooms in grouped_rooms %}
+                    <div class="mb-4">
+                        <h5 style="color: var(--brand-yellow); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--brand-yellow);">
+                            <i class="bi bi-building"></i> {{ hostel_name }}
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%;">Room Number</th>
+                                        <th style="width: 15%;">Location</th>
+                                        <th style="width: 10%;">Capacity</th>
+                                        <th style="width: 30%;">Occupancy</th>
+                                        <th style="width: 10%;">Status</th>
+                                        <th style="width: 20%;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for room in hostel_rooms %}
+                                    <tr>
+                                        <td style="color: var(--text-primary);"><strong>{{ room.roomnumber }}</strong></td>
+                                        <td style="color: var(--text-primary);">{{ room.hostelid.location|default:"-" }}</td>
+                                        <td style="color: var(--text-primary);">{{ room.capacity }}</td>
+                                        <td>
+                                            {% with percentage=room.occupancy_percentage %}
+                                            <div class="progress" style="height: 25px; background: rgba(255, 255, 255, 0.1);">
+                                                <div class="progress-bar {% if percentage >= 100 %}bg-danger{% elif percentage >= 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                                                     role="progressbar" 
+                                                     aria-valuenow="{{ percentage }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100"
+                                                     style="width: {{ percentage|floatformat:0 }}%">
+                                                    {{ room.current_occupancy }}/{{ room.capacity }}
+                                                </div>
+                                            </div>
+                                            {% endwith %}
+                                        </td>
+                                        <td>
+                                            {% if room.is_full %}
+                                            <span class="badge bg-danger">Full</span>
+                                            {% else %}
+                                            <span class="badge bg-success">Available</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="white-space: nowrap;">
+                                            <a href="{% url 'room_detail' room.pk %}" class="btn btn-sm btn-info" title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if user.is_superuser or user.profile.role == 'admin' %}
+                                            <a href="{% url 'room_edit' room.pk %}" class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'room_delete' room.pk %}" class="btn btn-sm btn-danger" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
                 {% else %}
-                <p class="text-muted text-center mb-0">No rooms found.</p>
+                <p style="color: var(--text-muted);" class="text-center mb-0">No rooms found.</p>
                 {% endif %}
             </div>
         </div>

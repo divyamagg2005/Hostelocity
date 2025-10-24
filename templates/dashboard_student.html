@@ -1,91 +1,241 @@
-{% extends 'base.html' %}
+{% extends 'base_student.html' %}
 
-{% block title %}Student Dashboard - Hostel Management System{% endblock %}
+{% block title %}Student Dashboard - Hostelocity{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h2 class="text-white mb-4"><i class="bi bi-speedometer2"></i> Student Dashboard</h2>
+        <h2 class="page-title"><i class="bi bi-speedometer2"></i> Student Dashboard</h2>
     </div>
 </div>
 
 {% if student %}
-<!-- Student Info Card -->
+<!-- Profile Completion Alert -->
+{% if not student_profile.address or not student_profile.father_name or not student_profile.mother_name %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Profile Incomplete!</strong> Please complete your profile details to access all features.
+            <a href="{% url 'student_profile_edit' %}" class="btn btn-warning btn-sm ms-2">
+                <i class="bi bi-pencil-square"></i> Complete Profile
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Student Personal Details -->
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-person"></i> My Profile</h5>
+                <h5 class="mb-0"><i class="bi bi-person"></i> Personal Information</h5>
             </div>
-            <div class="card-body text-center">
-                {% if student.photo %}
-                <img src="{{ student.photo.url }}" alt="{{ student.name }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                {% else %}
-                <div class="mb-3" style="font-size: 5rem; color: #667eea;">
-                    <i class="bi bi-person-circle"></i>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Name:</strong> {{ student.name }}</p>
+                        <p><strong>Student ID:</strong> {{ student.studentid }}</p>
+                        <p><strong>Gender:</strong> {{ student.gender|default:"Not specified" }}</p>
+                        <p><strong>Department:</strong> {{ student.department|default:"Not specified" }}</p>
+                        <p><strong>Date of Birth:</strong> 
+                            {% if student_profile.date_of_birth %}
+                                {{ student_profile.date_of_birth|date:"M d, Y" }}
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Phone:</strong> {{ student.phone|default:"Not provided" }}</p>
+                        <p><strong>Email:</strong> {{ user.email|default:"Not provided" }}</p>
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Address:</strong> 
+                            {% if student_profile.address %}
+                                {{ student_profile.address|truncatewords:10 }}
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Parent Information -->
+                {% if student_profile.father_name or student_profile.mother_name %}
+                <hr>
+                <h6 class="text-muted mb-3">Parent Information</h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Father's Name:</strong> {{ student_profile.father_name|default:"Not provided" }}</p>
+                        <p><strong>Father's Phone:</strong> {{ student_profile.father_phone|default:"Not provided" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Mother's Name:</strong> {{ student_profile.mother_name|default:"Not provided" }}</p>
+                        <p><strong>Mother's Phone:</strong> {{ student_profile.mother_phone|default:"Not provided" }}</p>
+                    </div>
                 </div>
                 {% endif %}
-                <h4>{{ student.name }}</h4>
-                <p class="text-muted mb-1">{{ student.roll_number }}</p>
-                <p class="mb-1"><strong>Course:</strong> {{ student.course }}</p>
-                <p class="mb-1"><strong>Year:</strong> {{ student.get_year_display }}</p>
-                <p class="mb-1"><strong>Room:</strong> {{ student.room.room_number|default:"Not Assigned" }}</p>
+                
+                <!-- Edit Profile Button -->
+                <hr>
+                <div class="text-center">
+                    <a href="{% url 'student_profile_edit' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil-square"></i> Edit Profile Details
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-8">
-        <!-- Statistics -->
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <div class="card stat-card" style="border-left-color: #e74c3c;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-1">Pending Payments</h6>
-                                <h2 class="mb-0">{{ pending_payments }}</h2>
+    <div class="col-md-6">
+        <!-- Combined Statistics Card -->
+        <div class="card stat-card mb-3">
+            <div class="card-body" style="padding: 16px;">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center justify-content-between py-2 px-2" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-credit-card text-danger me-2" style="font-size: 1.3rem;"></i>
+                                <h6 class="text-muted mb-0" style="font-size: 0.85rem;">Pending Payments</h6>
                             </div>
-                            <div class="text-danger" style="font-size: 3rem;">
-                                <i class="bi bi-credit-card"></i>
-                            </div>
+                            <h2 class="mb-0" style="font-size: 1.8rem; font-weight: 600;">{{ pending_payments_count }}</h2>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="card stat-card" style="border-left-color: #f39c12;">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-muted mb-1">My Complaints</h6>
-                                <h2 class="mb-0">{{ my_complaints|length }}</h2>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center justify-content-between py-2 px-2">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-exclamation-triangle text-warning me-2" style="font-size: 1.3rem;"></i>
+                                <h6 class="text-muted mb-0" style="font-size: 0.85rem;">My Complaints</h6>
                             </div>
-                            <div class="text-warning" style="font-size: 3rem;">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
+                            <h2 class="mb-0" style="font-size: 1.8rem; font-weight: 600;">{{ my_complaints|length }}</h2>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Room Details -->
-        {% if student.room %}
-        <div class="card mb-4">
+
+        <!-- Room Allocation Card -->
+        <div class="card">
+            <div class="card-header" style="padding: 12px 16px;">
+                <h5 class="mb-0" style="font-size: 0.95rem;"><i class="bi bi-door-open"></i> Room Allocation</h5>
+            </div>
+            <div class="card-body" style="padding: 16px;">
+                {% with current_room=student.get_current_room %}
+                    {% if current_room %}
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <p class="mb-2"><strong>Room Number:</strong> {{ current_room.roomnumber }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-2"><strong>Hostel:</strong> {{ current_room.hostel.name }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-2"><strong>Room Type:</strong> {{ current_room.type|default:"Not specified" }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-2"><strong>Floor:</strong> 
+                                    {% if current_room.roomnumber %}
+                                        {% with room_num=current_room.roomnumber|stringformat:"s" %}
+                                            {% if room_num|length >= 2 %}
+                                                {{ room_num|slice:":2" }}th Floor
+                                            {% else %}
+                                                Ground Floor
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-2"><strong>Capacity:</strong> {{ current_room.capacity }}</p>
+                            </div>
+                            <div class="col-12">
+                                <p class="mb-2"><strong>Allocation Date:</strong> 
+                                    {% with allocation=student.get_current_allocation %}
+                                        {{ allocation.date_of_allocation|date:"M d, Y" }}
+                                    {% endwith %}
+                                </p>
+                            </div>
+                            {% if student_profile.hostel_mess %}
+                            <div class="col-12">
+                                <hr style="margin: 8px 0;">
+                                <p class="mb-0"><strong>Hostel Mess:</strong> 
+                                    <span class="badge bg-info">{{ student_profile.hostel_mess }}</span>
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-2">
+                            <i class="bi bi-door-closed text-muted" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2 mb-1" style="font-size: 0.95rem;">No Room Assigned</h6>
+                            <p class="text-muted mb-0" style="font-size: 0.85rem;">You have not been assigned a room yet.</p>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Dues -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-door-open"></i> My Room</h5>
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Pending Payment Dues</h5>
             </div>
             <div class="card-body">
-                <p><strong>Room Number:</strong> {{ student.room.room_number }}</p>
-                <p><strong>Type:</strong> {{ student.room.get_room_type_display }}</p>
-                <p><strong>Floor:</strong> {{ student.room.floor }}</p>
-                <p><strong>Capacity:</strong> {{ student.room.capacity }}</p>
-                <p><strong>Current Occupancy:</strong> {{ student.room.current_occupancy }}</p>
-                <a href="{% url 'room_detail' student.room.pk %}" class="btn btn-sm btn-primary">View Details</a>
+                {% if pending_payments_list %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Payment Type</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in pending_payments_list %}
+                            <tr>
+                                <td>
+                                    {% if payment.payment_record %}
+                                        {{ payment.payment_record.payment_type }}
+                                    {% else %}
+                                        General Payment
+                                    {% endif %}
+                                </td>
+                                <td>₹{{ payment.amount }}</td>
+                                <td>{{ payment.duedate|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if payment.status == 'Pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% elif payment.status == 'Paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{% url 'payment_list' %}" class="btn btn-sm btn-primary">View All Payments</a>
+                {% else %}
+                <div class="text-center">
+                    <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h5 class="mt-2">No Payment Dues</h5>
+                    <p class="text-muted">You have no pending payments.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
-        {% endif %}
     </div>
 </div>
 
@@ -137,32 +287,32 @@
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-credit-card"></i> Recent Payments</h5>
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Recent Paid Payments</h5>
             </div>
             <div class="card-body">
-                {% if my_payments %}
+                {% if paid_payments %}
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Type</th>
                                 <th>Amount</th>
-                                <th>Status</th>
+                                <th>Date Paid</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for payment in my_payments %}
+                            {% for payment in paid_payments %}
                             <tr>
-                                <td>{{ payment.get_payment_type_display }}</td>
+                                <td>
+                                    {% if payment.payment_record %}
+                                        {{ payment.payment_record.payment_type }}
+                                    {% else %}
+                                        General Payment
+                                    {% endif %}
+                                </td>
                                 <td>₹{{ payment.amount }}</td>
                                 <td>
-                                    {% if payment.status == 'pending' %}
-                                    <span class="badge bg-warning">Pending</span>
-                                    {% elif payment.status == 'paid' %}
                                     <span class="badge bg-success">Paid</span>
-                                    {% else %}
-                                    <span class="badge bg-danger">Overdue</span>
-                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -171,7 +321,7 @@
                 </div>
                 <a href="{% url 'payment_list' %}" class="btn btn-sm btn-primary">View All</a>
                 {% else %}
-                <p class="text-muted mb-0">No payment records yet.</p>
+                <p class="text-muted mb-0">No paid payments yet.</p>
                 {% endif %}
             </div>
         </div>
@@ -192,8 +342,11 @@
                 <a href="{% url 'complaint_list' %}" class="btn btn-info me-2 mb-2">
                     <i class="bi bi-list-ul"></i> View My Complaints
                 </a>
+                <a href="{% url 'student_payment_make' %}" class="btn btn-primary me-2 mb-2">
+                    <i class="bi bi-credit-card"></i> Make Payment
+                </a>
                 <a href="{% url 'payment_list' %}" class="btn btn-success mb-2">
-                    <i class="bi bi-credit-card"></i> View Payment History
+                    <i class="bi bi-clock-history"></i> Payment History
                 </a>
             </div>
         </div>

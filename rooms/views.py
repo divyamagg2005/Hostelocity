@@ -17,19 +17,53 @@ def is_admin(user):
 
 @login_required
 def room_list(request):
-    """List all rooms"""
-    rooms = Room.objects.all()
+    """List all rooms grouped by hostel"""
+    from collections import defaultdict
+    from students.models import Allocation
+    
+    # Get all rooms
+    rooms = Room.objects.select_related('hostelid').all()
     
     # Calculate statistics
     total_rooms = rooms.count()
-    # Count occupied rooms (rooms with allocations)
-    from students.models import Allocation
-    occupied_room_ids = Allocation.objects.values_list('room_id', flat=True).distinct()
-    occupied_rooms = len(occupied_room_ids)
-    available_rooms = total_rooms - occupied_rooms
+    
+    # Count occupied and available rooms correctly
+    # Occupied = completely full (current_occupancy == capacity)
+    # Available = has at least one bed free (current_occupancy < capacity)
+    occupied_rooms = 0
+    available_rooms = 0
+    
+    for room in rooms:
+        current_occupancy = Allocation.objects.filter(room=room).count()
+        if current_occupancy >= room.capacity:
+            occupied_rooms += 1
+        else:
+            available_rooms += 1
+    
+    # Group rooms by hostel
+    rooms_by_hostel = defaultdict(list)
+    for room in rooms:
+        hostel_name = room.hostelid.name if room.hostelid else 'Unassigned'
+        rooms_by_hostel[hostel_name].append(room)
+    
+    # Sort rooms within each hostel by room number (numerically if possible)
+    def room_sort_key(room):
+        try:
+            # Try to convert room number to integer for numeric sorting
+            return int(room.roomnumber)
+        except (ValueError, TypeError):
+            # Fall back to string sorting if not numeric
+            return room.roomnumber or ''
+    
+    for hostel_name in rooms_by_hostel:
+        rooms_by_hostel[hostel_name].sort(key=room_sort_key)
+    
+    # Convert to sorted list of tuples (hostel_name, rooms_list)
+    grouped_rooms = sorted(rooms_by_hostel.items())
     
     context = {
         'rooms': rooms,
+        'grouped_rooms': grouped_rooms,
         'total_rooms': total_rooms,
         'occupied_rooms': occupied_rooms,
         'available_rooms': available_rooms,
@@ -102,12 +136,18 @@ def room_delete(request, pk):
 def room_detail(request, pk):
     """View room details"""
     room = get_object_or_404(Room, pk=pk)
-    from students.models import Allocation
-    allocations = Allocation.objects.filter(room=room)
+    from students.models import Allocation, Student
+    
+    # Get all allocations for this room
+    allocations = Allocation.objects.filter(room=room).select_related('student')
+    
+    # Get the students from the allocations
+    students = [allocation.student for allocation in allocations]
     
     context = {
         'room': room,
         'allocations': allocations,
+        'students': students,
     }
     return render(request, 'rooms/room_detail.html', context)
 
