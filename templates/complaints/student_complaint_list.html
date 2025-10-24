@@ -48,14 +48,16 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ complaint.created_at|date:"M d, Y" }}</td>
-                                <td>
+                                <td style="white-space: nowrap;">
                                     <a href="{% url 'complaint_detail' complaint.pk %}" 
-                                       class="btn btn-sm btn-primary">
+                                       class="btn btn-sm btn-warning"
+                                       title="View">
                                         <i class="bi bi-eye"></i> View
                                     </a>
                                     {% if complaint.status != 'resolved' %}
                                     <a href="{% url 'complaint_delete' complaint.pk %}" 
-                                       class="btn btn-sm btn-danger">
+                                       class="btn btn-sm btn-danger"
+                                       title="Delete">
                                         <i class="bi bi-trash"></i> Delete
                                     </a>
                                     {% endif %}
