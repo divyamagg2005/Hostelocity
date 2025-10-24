@@ -5,6 +5,13 @@ Django settings for hostel_management project.
 from pathlib import Path
 from decouple import config
 import os
+from dotenv import load_dotenv
+import dj_database_url
+
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 from dotenv import load_dotenv
 import os
@@ -21,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
 # Application definition
 
@@ -78,16 +85,27 @@ TEMPLATES = [
 WSGI_APPLICATION = 'hostel_management.wsgi.application'
 
 # Database - Supabase PostgreSQL
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': config('SUPABASE_HOST', default='localhost'),
-        'NAME': config('SUPABASE_DB_NAME', default='postgres'),
-        'USER': config('SUPABASE_USER', default='postgres'),
-        'PASSWORD': config('SUPABASE_PASSWORD', default=''),
-        'PORT': config('SUPABASE_PORT', default='5432'),
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'HOST': config('SUPABASE_HOST', default='localhost'),
+            'NAME': config('SUPABASE_DB_NAME', default='postgres'),
+            'USER': config('SUPABASE_USER', default='postgres'),
+            'PASSWORD': config('SUPABASE_PASSWORD', default=''),
+            'PORT': config('SUPABASE_PORT', default='5432'),
+        }
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
