@@ -69,16 +69,22 @@ def complaint_add(request):
             complaint.student = student
             complaint.save()
             
-            # Send email confirmation to student
+            # Send email confirmation to student (only if email is configured)
+            email_sent = False
             try:
-                from hostel_management.email_utils import send_complaint_confirmation_email
-                if request.user.email:
-                    send_complaint_confirmation_email(complaint, request.user.email)
+                from django.conf import settings
+                # Only attempt to send email if email is properly configured
+                if settings.EMAIL_HOST_USER and request.user.email:
+                    from hostel_management.email_utils import send_complaint_confirmation_email
+                    email_sent = send_complaint_confirmation_email(complaint, request.user.email)
             except Exception as e:
                 print(f"Email sending failed: {str(e)}")
                 # Continue even if email fails
             
-            messages.success(request, 'Complaint submitted successfully! A confirmation email has been sent.')
+            if email_sent:
+                messages.success(request, 'Complaint submitted successfully! A confirmation email has been sent.')
+            else:
+                messages.success(request, 'Complaint submitted successfully!')
             return redirect('complaint_list')
     else:
         form = ComplaintForm()
@@ -147,24 +153,29 @@ def complaint_update(request, pk):
             
             # Send email notification if complaint was just resolved
             if status_changed_to_resolved:
+                email_sent = False
                 try:
-                    from hostel_management.email_utils import send_complaint_resolution_email
-                    from django.contrib.auth.models import User
-                    
-                    # Try to find user email by matching username with student name
-                    user = User.objects.filter(username__iexact=complaint.student.name).first()
-                    if not user:
-                        # Try other methods to find user
-                        user = User.objects.filter(id=complaint.student.studentid).first()
-                    
-                    if user and user.email:
-                        send_complaint_resolution_email(complaint, user.email)
-                        messages.success(request, 'Complaint updated successfully! A resolution email has been sent to the student.')
-                    else:
-                        messages.success(request, 'Complaint updated successfully! (Email notification not sent - student email not found)')
+                    from django.conf import settings
+                    # Only attempt to send email if email is properly configured
+                    if settings.EMAIL_HOST_USER:
+                        from hostel_management.email_utils import send_complaint_resolution_email
+                        from django.contrib.auth.models import User
+                        
+                        # Try to find user email by matching username with student name
+                        user = User.objects.filter(username__iexact=complaint.student.name).first()
+                        if not user:
+                            # Try other methods to find user
+                            user = User.objects.filter(id=complaint.student.studentid).first()
+                        
+                        if user and user.email:
+                            email_sent = send_complaint_resolution_email(complaint, user.email)
                 except Exception as e:
                     print(f"Email sending failed: {str(e)}")
-                    messages.success(request, 'Complaint updated successfully! (Email notification failed)')
+                
+                if email_sent:
+                    messages.success(request, 'Complaint updated successfully! A resolution email has been sent to the student.')
+                else:
+                    messages.success(request, 'Complaint updated successfully!')
             else:
                 messages.success(request, 'Complaint updated successfully!')
             

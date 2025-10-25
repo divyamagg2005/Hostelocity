@@ -258,15 +258,21 @@ def student_payment_make(request):
                         
                         payment_type_display = payment_record.payment_type if payment_record else payment_type
                         
-                        # Send email confirmation
+                        # Send email confirmation (only if email is configured)
+                        email_sent = False
                         try:
-                            from hostel_management.email_utils import send_payment_confirmation_email
-                            if request.user.email:
-                                send_payment_confirmation_email(fee, payment_type_display, request.user.email, student.name)
+                            from django.conf import settings
+                            # Only attempt to send email if email is properly configured
+                            if settings.EMAIL_HOST_USER and request.user.email:
+                                from hostel_management.email_utils import send_payment_confirmation_email
+                                email_sent = send_payment_confirmation_email(fee, payment_type_display, request.user.email, student.name)
                         except Exception as e:
                             print(f"Email sending failed: {str(e)}")
                         
-                        messages.success(request, f'Payment of ₹{amount} for {payment_type_display} has been processed successfully! A confirmation email has been sent.')
+                        if email_sent:
+                            messages.success(request, f'Payment of ₹{amount} for {payment_type_display} has been processed successfully! A confirmation email has been sent.')
+                        else:
+                            messages.success(request, f'Payment of ₹{amount} for {payment_type_display} has been processed successfully!')
                     except Fee.DoesNotExist:
                         messages.error(request, 'Payment not found.')
                         return redirect('payment_list')
@@ -286,16 +292,22 @@ def student_payment_make(request):
                         payment_type=payment_type
                     )
                     
-                    # Send email confirmation to student
+                    # Send email confirmation to student (only if email is configured)
+                    email_sent = False
                     try:
-                        from hostel_management.email_utils import send_payment_confirmation_email
-                        if request.user.email:
-                            send_payment_confirmation_email(fee, payment_type, request.user.email, student.name)
+                        from django.conf import settings
+                        # Only attempt to send email if email is properly configured
+                        if settings.EMAIL_HOST_USER and request.user.email:
+                            from hostel_management.email_utils import send_payment_confirmation_email
+                            email_sent = send_payment_confirmation_email(fee, payment_type, request.user.email, student.name)
                     except Exception as e:
                         print(f"Email sending failed: {str(e)}")
                         # Continue even if email fails
                     
-                    messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully! A confirmation email has been sent.')
+                    if email_sent:
+                        messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully! A confirmation email has been sent.')
+                    else:
+                        messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully!')
                 
                 return redirect('payment_list')
             except Exception as e:
