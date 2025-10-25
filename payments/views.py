@@ -232,7 +232,16 @@ def student_payment_make(request):
                     payment_type=payment_type
                 )
                 
-                messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully!')
+                # Send email confirmation to student
+                try:
+                    from hostel_management.email_utils import send_payment_confirmation_email
+                    if request.user.email:
+                        send_payment_confirmation_email(fee, payment_type, request.user.email, student.name)
+                except Exception as e:
+                    print(f"Email sending failed: {str(e)}")
+                    # Continue even if email fails
+                
+                messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully! A confirmation email has been sent.')
                 return redirect('payment_list')
             except Exception as e:
                 messages.error(request, f'Error processing payment: {str(e)}')
