@@ -66,9 +66,17 @@
             --brand-accent: #ffd700;
         }
 
+        /* Universal Box Sizing - Windows Webkit Compatibility */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+
         /* Grid Background Pattern */
         body {
             width: 100%;
+            max-width: 100vw;
             min-height: 100vh;
             background-color: var(--bg-color);
             background-image: linear-gradient(
@@ -99,8 +107,19 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            overflow-y: auto;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             transition: background-color 0.3s ease, background-image 0.3s ease;
+            /* Windows font rendering */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Prevent horizontal overflow on all containers */
+        html {
+            overflow-x: hidden;
+            max-width: 100vw;
         }
 
         /* Glassmorphism Sidebar */
@@ -292,13 +311,40 @@
             font-size: 1.2rem;
         }
 
-        /* Main Content Area */
+        /* Main Content Area - Windows Webkit Optimized */
         .main-content {
             margin-left: 320px;
             padding: 40px;
             min-height: 100vh;
             width: calc(100vw - 360px);
             max-width: calc(100vw - 360px);
+            box-sizing: border-box;
+            overflow-x: hidden;
+            /* Windows webkit flexbox fix */
+            display: block;
+            position: relative;
+        }
+        
+        /* Prevent content overflow in rows */
+        .main-content .row {
+            margin-left: 0;
+            margin-right: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Windows webkit column fix */
+        .main-content [class*="col-"] {
+            padding-left: 12px;
+            padding-right: 12px;
+            box-sizing: border-box;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        /* Ensure all direct children respect container width */
+        .main-content > * {
+            max-width: 100%;
             box-sizing: border-box;
         }
 
@@ -500,6 +546,54 @@
 
         .table-responsive {
             background: transparent !important;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            box-sizing: border-box;
+        }
+        
+        /* Windows webkit table fix */
+        .table-responsive table {
+            min-width: 100%;
+            width: 100%;
+            table-layout: auto;
+        }
+        
+        /* Custom Scrollbar Styles for Windows */
+        *::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        *::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        *::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        *::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Light theme scrollbar */
+        [data-theme="light"] *::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="light"] *::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        [data-theme="light"] *::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
         }
 
         /* Remove all white backgrounds from tables */
@@ -654,7 +748,7 @@
             font-weight: 500;
         }
 
-        /* Forms */
+        /* Forms - Windows Webkit Compatible */
         .form-control, .form-select {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -663,6 +757,12 @@
             padding: 12px;
             font-family: "Geist Mono", monospace;
             font-weight: 200;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
         .form-control:focus, .form-select:focus {
@@ -670,6 +770,19 @@
             border-color: var(--brand-yellow);
             color: var(--text-primary);
             box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+            outline: none;
+        }
+        
+        /* Windows specific input fixes */
+        input, select, textarea, button {
+            font-family: "Geist Mono", monospace;
+            box-sizing: border-box;
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+            max-width: 100%;
         }
 
         .form-label {
