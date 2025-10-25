@@ -258,12 +258,16 @@ def student_payment_make(request):
                         
                         payment_type_display = payment_record.payment_type if payment_record else payment_type
                         
-                        # Send email confirmation (only if email is configured)
+                        # Send email confirmation (only if email credentials are properly configured)
                         email_sent = False
                         try:
                             from django.conf import settings
-                            # Only attempt to send email if email is properly configured
-                            if settings.EMAIL_HOST_USER and request.user.email:
+                            # Only attempt to send email if email credentials are properly configured
+                            if (settings.EMAIL_HOST_USER and 
+                                settings.EMAIL_HOST_USER.strip() and 
+                                settings.EMAIL_HOST_PASSWORD and 
+                                settings.EMAIL_HOST_PASSWORD.strip() and 
+                                request.user.email):
                                 from hostel_management.email_utils import send_payment_confirmation_email
                                 email_sent = send_payment_confirmation_email(fee, payment_type_display, request.user.email, student.name)
                         except Exception as e:
@@ -292,12 +296,16 @@ def student_payment_make(request):
                         payment_type=payment_type
                     )
                     
-                    # Send email confirmation to student (only if email is configured)
+                    # Send email confirmation to student (only if email credentials are properly configured)
                     email_sent = False
                     try:
                         from django.conf import settings
-                        # Only attempt to send email if email is properly configured
-                        if settings.EMAIL_HOST_USER and request.user.email:
+                        # Only attempt to send email if email credentials are properly configured
+                        if (settings.EMAIL_HOST_USER and 
+                            settings.EMAIL_HOST_USER.strip() and 
+                            settings.EMAIL_HOST_PASSWORD and 
+                            settings.EMAIL_HOST_PASSWORD.strip() and 
+                            request.user.email):
                             from hostel_management.email_utils import send_payment_confirmation_email
                             email_sent = send_payment_confirmation_email(fee, payment_type, request.user.email, student.name)
                     except Exception as e:

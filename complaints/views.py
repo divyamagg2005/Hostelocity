@@ -71,12 +71,16 @@ def complaint_add(request):
                     complaint.student = student
                     complaint.save()
                     
-                    # Send email confirmation to student (only if email is configured)
+                    # Send email confirmation to student (only if email is properly configured)
                     email_sent = False
                     try:
                         from django.conf import settings
-                        # Only attempt to send email if email is properly configured
-                        if settings.EMAIL_HOST_USER and request.user.email:
+                        # Only attempt to send email if email credentials are properly configured
+                        if (settings.EMAIL_HOST_USER and 
+                            settings.EMAIL_HOST_USER.strip() and 
+                            settings.EMAIL_HOST_PASSWORD and 
+                            settings.EMAIL_HOST_PASSWORD.strip() and 
+                            request.user.email):
                             from hostel_management.email_utils import send_complaint_confirmation_email
                             email_sent = send_complaint_confirmation_email(complaint, request.user.email)
                     except Exception as e:
@@ -172,8 +176,11 @@ def complaint_update(request, pk):
                 email_sent = False
                 try:
                     from django.conf import settings
-                    # Only attempt to send email if email is properly configured
-                    if settings.EMAIL_HOST_USER:
+                    # Only attempt to send email if email credentials are properly configured
+                    if (settings.EMAIL_HOST_USER and 
+                        settings.EMAIL_HOST_USER.strip() and 
+                        settings.EMAIL_HOST_PASSWORD and 
+                        settings.EMAIL_HOST_PASSWORD.strip()):
                         from hostel_management.email_utils import send_complaint_resolution_email
                         from django.contrib.auth.models import User
                         

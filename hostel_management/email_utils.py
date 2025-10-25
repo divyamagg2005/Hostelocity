@@ -87,6 +87,14 @@ This is an automated email. Please do not reply to this message.
     """
     
     try:
+        # Use fail_silently=True to prevent blocking and timeouts
+        from django.core.mail import get_connection
+        
+        # Create connection with timeout
+        connection = get_connection(
+            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10)
+        )
+        
         send_mail(
             subject=subject,
             message=plain_message,
@@ -94,6 +102,7 @@ This is an automated email. Please do not reply to this message.
             recipient_list=[student_email],
             html_message=html_message,
             fail_silently=False,
+            connection=connection,
         )
         return True
     except Exception as e:
@@ -187,6 +196,14 @@ This is an automated email. Please do not reply to this message.
     """
     
     try:
+        # Use connection with timeout to prevent blocking
+        from django.core.mail import get_connection
+        
+        # Create connection with timeout
+        connection = get_connection(
+            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10)
+        )
+        
         send_mail(
             subject=subject,
             message=plain_message,
@@ -194,6 +211,7 @@ This is an automated email. Please do not reply to this message.
             recipient_list=[student_email],
             html_message=html_message,
             fail_silently=False,
+            connection=connection,
         )
         return True
     except Exception as e:
@@ -298,6 +316,14 @@ This is an automated email. Please do not reply to this message.
     """
     
     try:
+        # Use connection with timeout to prevent blocking
+        from django.core.mail import get_connection
+        
+        # Create connection with timeout
+        connection = get_connection(
+            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10)
+        )
+        
         send_mail(
             subject=subject,
             message=plain_message,
@@ -305,6 +331,7 @@ This is an automated email. Please do not reply to this message.
             recipient_list=[student_email],
             html_message=html_message,
             fail_silently=False,
+            connection=connection,
         )
         return True
     except Exception as e:

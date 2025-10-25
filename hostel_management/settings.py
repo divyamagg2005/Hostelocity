@@ -148,3 +148,4 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # Use app password, not regular password
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=config('EMAIL_HOST_USER', default=''))
 SERVER_EMAIL = config('SERVER_EMAIL', default=config('EMAIL_HOST_USER', default=''))
+EMAIL_TIMEOUT = 10  # 10 second timeout for email connections
