@@ -18,14 +18,14 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Category:</strong> 
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Category:</strong> 
                             <span class="badge bg-secondary">{{ complaint.get_category_display }}</span>
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Status:</strong> 
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Status:</strong> 
                             {% if complaint.status == 'pending' %}
-                            <span class="badge bg-warning">Pending</span>
+                            <span class="badge bg-warning" style="color: #000;">Pending</span>
                             {% elif complaint.status == 'in_progress' %}
                             <span class="badge bg-info">In Progress</span>
                             {% else %}
@@ -37,28 +37,28 @@
                 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Submitted On:</strong> {{ complaint.created_at|date:"M d, Y - h:i A" }}</p>
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Submitted On:</strong> <span style="color: var(--text-primary);">{{ complaint.created_at|date:"M d, Y - h:i A" }}</span></p>
                     </div>
                     {% if complaint.resolved_at %}
                     <div class="col-md-6">
-                        <p><strong>Resolved On:</strong> {{ complaint.resolved_at|date:"M d, Y - h:i A" }}</p>
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Resolved On:</strong> <span style="color: var(--text-primary);">{{ complaint.resolved_at|date:"M d, Y - h:i A" }}</span></p>
                     </div>
                     {% endif %}
                 </div>
                 
-                <hr>
+                <hr style="border-color: var(--text-primary); opacity: 0.2;">
                 
                 <div class="mb-3">
-                    <h6 class="text-muted">Description:</h6>
-                    <p style="white-space: pre-wrap;">{{ complaint.description }}</p>
+                    <h6 style="color: var(--text-primary); opacity: 0.7;">Description:</h6>
+                    <p style="white-space: pre-wrap; color: var(--text-primary);">{{ complaint.description }}</p>
                 </div>
                 
                 {% if complaint.admin_response %}
-                <hr>
+                <hr style="border-color: var(--text-primary); opacity: 0.2;">
                 <div class="mb-3">
-                    <h6 class="text-muted">Admin Response:</h6>
+                    <h6 style="color: var(--text-primary); opacity: 0.7;">Admin Response:</h6>
                     <div class="alert alert-info">
-                        <p style="white-space: pre-wrap;">{{ complaint.admin_response }}</p>
+                        <p style="white-space: pre-wrap; color: var(--text-primary);">{{ complaint.admin_response }}</p>
                     </div>
                 </div>
                 {% endif %}
@@ -86,19 +86,19 @@
             </div>
             <div class="card-body">
                 {% if complaint.status == 'pending' %}
-                <div class="alert alert-warning">
+                <div class="alert alert-warning" style="color: #000;">
                     <i class="bi bi-clock-history"></i>
                     <strong>Pending</strong>
                     <p class="mb-0 mt-2">Your complaint is waiting to be reviewed by the administration.</p>
                 </div>
                 {% elif complaint.status == 'in_progress' %}
-                <div class="alert alert-info">
+                <div class="alert alert-info" style="color: #000;">
                     <i class="bi bi-tools"></i>
                     <strong>In Progress</strong>
                     <p class="mb-0 mt-2">Your complaint is currently being addressed.</p>
                 </div>
                 {% else %}
-                <div class="alert alert-success">
+                <div class="alert alert-success" style="color: #fff;">
                     <i class="bi bi-check-circle"></i>
                     <strong>Resolved</strong>
                     <p class="mb-0 mt-2">Your complaint has been resolved.</p>

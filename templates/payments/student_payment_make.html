@@ -5,9 +5,33 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h2 class="page-title"><i class="bi bi-credit-card"></i> Make Payment</h2>
+        <h2 class="page-title">
+            <i class="bi bi-credit-card"></i> 
+            {% if existing_payment %}
+                Pay Pending Payment
+            {% else %}
+                Make Payment
+            {% endif %}
+        </h2>
     </div>
 </div>
+
+{% if existing_payment %}
+<div class="row justify-content-center mb-3">
+    <div class="col-md-10">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>Payment Details:</strong> You are paying for 
+            {% if existing_payment.payment_record %}
+                <strong>{{ existing_payment.payment_record.payment_type }}</strong>
+            {% else %}
+                <strong>General Payment</strong>
+            {% endif %}
+            of <strong>₹{{ existing_payment.amount }}</strong> due on {{ existing_payment.duedate|date:"M d, Y" }}.
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="row justify-content-center">
     <div class="col-md-6">
@@ -18,20 +42,33 @@
             <div class="card-body">
                 <form method="post" id="paymentForm">
                     {% csrf_token %}
+                    {% if existing_payment %}
+                    <input type="hidden" name="payment_id" value="{{ existing_payment.pk }}">
+                    {% endif %}
                     
                     <div class="mb-4">
                         <label for="payment_type" class="form-label">Payment Type</label>
-                        <select class="form-control" id="payment_type" name="payment_type" required>
+                        <select class="form-control" id="payment_type" name="payment_type" required 
+                                {% if existing_payment and existing_payment.payment_record %}disabled{% endif %}>
                             <option value="">Select payment type...</option>
-                            <option value="Fees">Fees</option>
-                            <option value="Hostel">Hostel</option>
-                            <option value="Fests">Fests</option>
-                            <option value="Clubs/Chapters">Clubs/Chapters</option>
+                            <option value="Fees" {% if existing_payment and existing_payment.payment_record and existing_payment.payment_record.payment_type == 'Fees' %}selected{% endif %}>Fees</option>
+                            <option value="Hostel" {% if existing_payment and existing_payment.payment_record and existing_payment.payment_record.payment_type == 'Hostel' %}selected{% endif %}>Hostel</option>
+                            <option value="Fests" {% if existing_payment and existing_payment.payment_record and existing_payment.payment_record.payment_type == 'Fests' %}selected{% endif %}>Fests</option>
+                            <option value="Clubs/Chapters" {% if existing_payment and existing_payment.payment_record and existing_payment.payment_record.payment_type == 'Clubs/Chapters' %}selected{% endif %}>Clubs/Chapters</option>
                         </select>
+                        {% if existing_payment and existing_payment.payment_record %}
+                        <input type="hidden" name="payment_type" value="{{ existing_payment.payment_record.payment_type }}">
+                        <div class="form-text">Payment type is pre-filled based on the pending payment.</div>
+                        {% endif %}
                     </div>
                     
                     <div class="mb-4">
                         <label for="amount" class="form-label">Amount (₹)</label>
+                        {% if existing_payment %}
+                        <input type="number" class="form-control text-center" id="amount" name="amount" 
+                               value="{{ existing_payment.amount }}" min="{{ existing_payment.amount }}" max="100000" step="1" required readonly>
+                        <div class="form-text">Amount is set to the pending payment amount.</div>
+                        {% else %}
                         <div class="input-group">
                             <button type="button" class="btn btn-outline-secondary" id="decreaseBtn">
                                 <i class="bi bi-dash"></i>
@@ -43,11 +80,17 @@
                             </button>
                         </div>
                         <div class="form-text">Use the +/- buttons or type directly to set the amount.</div>
+                        {% endif %}
                     </div>
                     
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="bi bi-credit-card"></i> Pay Now
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-credit-card-fill"></i> 
+                            {% if existing_payment %}
+                                Complete Payment of ₹{{ existing_payment.amount }}
+                            {% else %}
+                                Pay Now
+                            {% endif %}
                         </button>
                     </div>
                 </form>

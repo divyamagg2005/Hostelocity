@@ -23,39 +23,41 @@
                 {% endif %}
             </div>
             <div class="card-body">
-                <table class="table">
-                    <tr>
-                        <th width="30%">Student:</th>
-                        <td>{{ payment.studentid.name }} (ID: {{ payment.studentid.studentid }})</td>
-                    </tr>
-                    <tr>
-                        <th>Payment Type:</th>
-                        <td>
-                            {% if payment.payment_record %}
-                                <span class="badge bg-primary">{{ payment.payment_record.payment_type }}</span>
-                            {% else %}
-                                <span class="text-muted">Not specified</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Amount:</th>
-                        <td><strong class="text-success">₹{{ payment.amount }}</strong></td>
-                    </tr>
-                    <tr>
-                        <th>Due Date:</th>
-                        <td>{{ payment.duedate|date:"M d, Y"|default:"Not specified" }}</td>
-                    </tr>
-                    <tr>
-                        <th>Status:</th>
-                        <td>
-                            {% if payment.status == 'Paid' %}
-                            <span class="badge bg-success">Paid</span>
-                            {% else %}
-                            <span class="badge bg-warning">Not Paid</span>
-                            {% endif %}
-                        </td>
-                    </tr>
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th width="30%" style="color: var(--text-primary);">Student:</th>
+                            <td style="color: var(--text-primary);">{{ payment.studentid.name }} (ID: {{ payment.studentid.studentid }})</td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Payment Type:</th>
+                            <td>
+                                {% if payment.payment_record %}
+                                    <span class="badge bg-warning" style="color: #000;">{{ payment.payment_record.payment_type }}</span>
+                                {% else %}
+                                    <span style="color: var(--text-primary); opacity: 0.6;">Not specified</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Amount:</th>
+                            <td><strong style="color: #4CAF50; font-size: 1.3rem;">₹{{ payment.amount }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Due Date:</th>
+                            <td style="color: var(--text-primary);">{{ payment.duedate|date:"M d, Y"|default:"Not specified" }}</td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Status:</th>
+                            <td>
+                                {% if payment.status == 'Paid' %}
+                                <span class="badge bg-success">Paid</span>
+                                {% else %}
+                                <span class="badge bg-warning" style="color: #000;">Not Paid</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
                 
                 <a href="{% url 'payment_list' %}" class="btn btn-secondary">

@@ -132,15 +132,42 @@ def complaint_detail(request, pk):
 def complaint_update(request, pk):
     """Update complaint status (admin only)"""
     complaint = get_object_or_404(Complaint, pk=pk)
+    old_status = complaint.status
     
     if request.method == 'POST':
         form = ComplaintUpdateForm(request.POST, instance=complaint)
         if form.is_valid():
             complaint = form.save(commit=False)
+            # Check if status changed to resolved
+            status_changed_to_resolved = (old_status != 'resolved' and complaint.status == 'resolved')
+            
             if complaint.status == 'resolved' and not complaint.resolved_at:
                 complaint.resolved_at = timezone.now()
             complaint.save()
-            messages.success(request, 'Complaint updated successfully!')
+            
+            # Send email notification if complaint was just resolved
+            if status_changed_to_resolved:
+                try:
+                    from hostel_management.email_utils import send_complaint_resolution_email
+                    from django.contrib.auth.models import User
+                    
+                    # Try to find user email by matching username with student name
+                    user = User.objects.filter(username__iexact=complaint.student.name).first()
+                    if not user:
+                        # Try other methods to find user
+                        user = User.objects.filter(id=complaint.student.studentid).first()
+                    
+                    if user and user.email:
+                        send_complaint_resolution_email(complaint, user.email)
+                        messages.success(request, 'Complaint updated successfully! A resolution email has been sent to the student.')
+                    else:
+                        messages.success(request, 'Complaint updated successfully! (Email notification not sent - student email not found)')
+                except Exception as e:
+                    print(f"Email sending failed: {str(e)}")
+                    messages.success(request, 'Complaint updated successfully! (Email notification failed)')
+            else:
+                messages.success(request, 'Complaint updated successfully!')
+            
             return redirect('complaint_detail', pk=pk)
     else:
         form = ComplaintUpdateForm(instance=complaint)

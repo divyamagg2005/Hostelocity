@@ -18,18 +18,18 @@
             <div class="card-body">
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Payment Type:</strong> 
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Payment Type:</strong> 
                             {% if payment.payment_record %}
-                                <span class="badge bg-primary">{{ payment.payment_record.payment_type }}</span>
+                                <span class="badge bg-warning" style="color: #000;">{{ payment.payment_record.payment_type }}</span>
                             {% else %}
                                 <span class="badge bg-secondary">General Payment</span>
                             {% endif %}
                         </p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Status:</strong> 
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Status:</strong> 
                             {% if payment.status == 'Pending' %}
-                            <span class="badge bg-warning">Pending</span>
+                            <span class="badge bg-warning" style="color: #000;">Pending</span>
                             {% elif payment.status == 'Paid' %}
                             <span class="badge bg-success">Paid</span>
                             {% else %}
@@ -41,19 +41,19 @@
                 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p><strong>Amount:</strong> <span class="text-success" style="font-size: 1.5rem;">₹{{ payment.amount }}</span></p>
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Amount:</strong> <span style="color: #4CAF50; font-size: 1.5rem; font-weight: bold;">₹{{ payment.amount }}</span></p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Due Date:</strong> {{ payment.duedate|date:"M d, Y" }}</p>
+                        <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Due Date:</strong> <span style="color: var(--text-primary);">{{ payment.duedate|date:"M d, Y" }}</span></p>
                     </div>
                 </div>
                 
                 {% if payment.payment_record %}
-                <hr>
+                <hr style="border-color: var(--text-primary); opacity: 0.2;">
                 <div class="mb-3">
-                    <h6 class="text-muted">Payment Details:</h6>
-                    <p><strong>Payment ID:</strong> {{ payment.pk }}</p>
-                    <p><strong>Payment Method:</strong> {{ payment.payment_record.payment_type }}</p>
+                    <h6 style="color: var(--text-primary); opacity: 0.7;">Payment Details:</h6>
+                    <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Payment ID:</strong> {{ payment.pk }}</p>
+                    <p style="color: var(--text-primary);"><strong style="color: var(--text-primary);">Payment Method:</strong> {{ payment.payment_record.payment_type }}</p>
                 </div>
                 {% endif %}
                 
@@ -63,9 +63,9 @@
                     <a href="{% url 'payment_list' %}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Back to List
                     </a>
-                    {% if payment.status == 'Pending' %}
-                    <a href="{% url 'student_payment_make' %}" class="btn btn-success">
-                        <i class="bi bi-credit-card"></i> Pay Now
+                    {% if payment.status == 'Pending' or payment.status == 'Overdue' %}
+                    <a href="{% url 'student_payment_make' %}?payment_id={{ payment.pk }}" class="btn btn-success">
+                        <i class="bi bi-credit-card-fill"></i> Pay Now
                     </a>
                     {% endif %}
                 </div>
@@ -80,22 +80,28 @@
             </div>
             <div class="card-body">
                 {% if payment.status == 'Pending' %}
-                <div class="alert alert-warning">
+                <div class="alert alert-warning" style="color: #000;">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Payment Pending</strong>
-                    <p class="mb-0 mt-2">Please make the payment before the due date to avoid late fees.</p>
+                    <p class="mt-2">Please make the payment before the due date to avoid late fees.</p>
+                    <a href="{% url 'student_payment_make' %}?payment_id={{ payment.pk }}" class="btn btn-success btn-sm mt-2">
+                        <i class="bi bi-credit-card-fill"></i> Pay Now
+                    </a>
                 </div>
                 {% elif payment.status == 'Paid' %}
-                <div class="alert alert-success">
+                <div class="alert alert-success" style="color: #fff;">
                     <i class="bi bi-check-circle"></i>
                     <strong>Payment Completed</strong>
                     <p class="mb-0 mt-2">Your payment has been successfully processed. Thank you!</p>
                 </div>
                 {% else %}
-                <div class="alert alert-danger">
+                <div class="alert alert-danger" style="color: #fff;">
                     <i class="bi bi-x-circle"></i>
                     <strong>Payment Overdue</strong>
-                    <p class="mb-0 mt-2">This payment is overdue. Please make the payment immediately.</p>
+                    <p class="mt-2">This payment is overdue. Please make the payment immediately.</p>
+                    <a href="{% url 'student_payment_make' %}?payment_id={{ payment.pk }}" class="btn btn-danger btn-sm mt-2">
+                        <i class="bi bi-credit-card-fill"></i> Pay Now - Urgent!
+                    </a>
                 </div>
                 {% endif %}
             </div>
@@ -107,6 +113,11 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    {% if payment.status == 'Pending' or payment.status == 'Overdue' %}
+                    <a href="{% url 'student_payment_make' %}?payment_id={{ payment.pk }}" class="btn btn-success">
+                        <i class="bi bi-credit-card-fill"></i> Pay This Payment
+                    </a>
+                    {% endif %}
                     <a href="{% url 'student_payment_make' %}" class="btn btn-primary">
                         <i class="bi bi-plus-circle"></i> Make New Payment
                     </a>

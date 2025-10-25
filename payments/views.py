@@ -211,37 +211,92 @@ def student_payment_make(request):
         messages.error(request, 'Student profile not found. Please contact admin.')
         return redirect('dashboard')
     
+    # Check if paying for a specific existing payment
+    payment_id = request.GET.get('payment_id')
+    existing_payment = None
+    
+    if payment_id:
+        try:
+            existing_payment = Fee.objects.get(pk=payment_id, studentid=student)
+            # Check if payment is already paid
+            if existing_payment.status == 'Paid':
+                messages.warning(request, 'This payment has already been completed.')
+                return redirect('payment_detail', pk=payment_id)
+        except Fee.DoesNotExist:
+            messages.error(request, 'Payment not found or you do not have permission to pay this.')
+            return redirect('payment_list')
+    
     if request.method == 'POST':
         payment_type = request.POST.get('payment_type')
         amount = request.POST.get('amount')
+        payment_id = request.POST.get('payment_id')
         
         if payment_type and amount:
             try:
-                # Create a new fee record for the student
-                fee = Fee.objects.create(
-                    studentid=student,
-                    amount=amount,
-                    duedate=timezone.now().date(),
-                    status='Paid'  # Mark as paid since student is making payment
-                )
+                if payment_id:
+                    # Paying an existing payment
+                    try:
+                        fee = Fee.objects.get(pk=payment_id, studentid=student)
+                        # Verify the amount matches or is sufficient
+                        if float(amount) < float(fee.amount):
+                            messages.error(request, f'Payment amount must be at least ₹{fee.amount}.')
+                            return redirect('student_payment_make')
+                        
+                        # Update the existing payment to Paid
+                        fee.status = 'Paid'
+                        fee.save()
+                        
+                        # Get or create payment record
+                        from .models import PaymentRecord
+                        payment_record, created = PaymentRecord.objects.get_or_create(
+                            fee=fee,
+                            defaults={'payment_type': payment_type}
+                        )
+                        if not created and payment_type:
+                            payment_record.payment_type = payment_type
+                            payment_record.save()
+                        
+                        payment_type_display = payment_record.payment_type if payment_record else payment_type
+                        
+                        # Send email confirmation
+                        try:
+                            from hostel_management.email_utils import send_payment_confirmation_email
+                            if request.user.email:
+                                send_payment_confirmation_email(fee, payment_type_display, request.user.email, student.name)
+                        except Exception as e:
+                            print(f"Email sending failed: {str(e)}")
+                        
+                        messages.success(request, f'Payment of ₹{amount} for {payment_type_display} has been processed successfully! A confirmation email has been sent.')
+                    except Fee.DoesNotExist:
+                        messages.error(request, 'Payment not found.')
+                        return redirect('payment_list')
+                else:
+                    # Create a new fee record for the student
+                    fee = Fee.objects.create(
+                        studentid=student,
+                        amount=amount,
+                        duedate=timezone.now().date(),
+                        status='Paid'  # Mark as paid since student is making payment
+                    )
+                    
+                    # Create a payment record to track the payment type
+                    from .models import PaymentRecord
+                    PaymentRecord.objects.create(
+                        fee=fee,
+                        payment_type=payment_type
+                    )
+                    
+                    # Send email confirmation to student
+                    try:
+                        from hostel_management.email_utils import send_payment_confirmation_email
+                        if request.user.email:
+                            send_payment_confirmation_email(fee, payment_type, request.user.email, student.name)
+                    except Exception as e:
+                        print(f"Email sending failed: {str(e)}")
+                        # Continue even if email fails
+                    
+                    messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully! A confirmation email has been sent.')
                 
-                # Create a payment record to track the payment type
-                from .models import PaymentRecord
-                PaymentRecord.objects.create(
-                    fee=fee,
-                    payment_type=payment_type
-                )
-                
-                # Send email confirmation to student
-                try:
-                    from hostel_management.email_utils import send_payment_confirmation_email
-                    if request.user.email:
-                        send_payment_confirmation_email(fee, payment_type, request.user.email, student.name)
-                except Exception as e:
-                    print(f"Email sending failed: {str(e)}")
-                    # Continue even if email fails
-                
-                messages.success(request, f'Payment of ₹{amount} for {payment_type} has been processed successfully! A confirmation email has been sent.')
                 return redirect('payment_list')
             except Exception as e:
                 messages.error(request, f'Error processing payment: {str(e)}')
@@ -250,5 +305,6 @@ def student_payment_make(request):
     
     context = {
         'student': student,
+        'existing_payment': existing_payment,
     }
     return render(request, 'payments/student_payment_make.html', context)

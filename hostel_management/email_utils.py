@@ -200,3 +200,114 @@ This is an automated email. Please do not reply to this message.
         print(f"Error sending payment email: {str(e)}")
         return False
 
+
+def send_complaint_resolution_email(complaint, student_email):
+    """
+    Send email notification when a complaint is resolved
+    """
+    subject = f'Complaint Resolved - #{complaint.id}'
+    
+    # Create HTML email message
+    html_message = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="color: #fff; margin: 0;">HostelGrid</h1>
+                <p style="color: #fff; margin: 10px 0 0 0;">Complaint Resolved</p>
+            </div>
+            
+            <div style="background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 10px 10px;">
+                <h2 style="color: #333; margin-top: 0;">Your Complaint Has Been Resolved ✅</h2>
+                
+                <p>Dear <strong>{complaint.student.name}</strong>,</p>
+                
+                <p>We're pleased to inform you that your complaint has been reviewed and resolved by our admin team.</p>
+                
+                <div style="background: #fff; padding: 20px; border-left: 4px solid #28a745; margin: 20px 0;">
+                    <h3 style="margin-top: 0; color: #28a745;">Complaint Details:</h3>
+                    <p><strong>Complaint ID:</strong> #{complaint.id}</p>
+                    <p><strong>Category:</strong> {complaint.get_category_display()}</p>
+                    <p><strong>Subject:</strong> {complaint.subject}</p>
+                    <p><strong>Description:</strong> {complaint.description}</p>
+                    <p><strong>Status:</strong> <span style="background: #28a745; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px;">RESOLVED</span></p>
+                    <p><strong>Submitted:</strong> {complaint.created_at.strftime('%B %d, %Y at %I:%M %p')}</p>
+                    <p><strong>Resolved:</strong> {complaint.resolved_at.strftime('%B %d, %Y at %I:%M %p') if complaint.resolved_at else 'Just now'}</p>
+                </div>
+                
+                {f'''<div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #c3e6cb;">
+                    <p style="margin: 0 0 5px 0; color: #155724;"><strong>📝 Admin Remarks:</strong></p>
+                    <p style="margin: 0; color: #155724;">{complaint.admin_remarks}</p>
+                </div>''' if complaint.admin_remarks else ''}
+                
+                <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; color: #2e7d32;"><strong>✨ Thank you for bringing this to our attention!</strong> We appreciate your patience and feedback.</p>
+                </div>
+                
+                <p><strong>What's next?</strong></p>
+                <ul>
+                    <li>Your complaint has been marked as resolved</li>
+                    <li>You can view the resolution details on your dashboard</li>
+                    <li>If you have any follow-up concerns, feel free to submit a new complaint</li>
+                </ul>
+                
+                <p>If you're not satisfied with the resolution or have additional concerns, please don't hesitate to contact the hostel office or submit a new complaint.</p>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #ddd; text-align: center; color: #666;">
+                    <p style="margin: 5px 0;">Thank you for using HostelGrid!</p>
+                    <p style="margin: 5px 0; font-size: 12px;">This is an automated email. Please do not reply to this message.</p>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    # Plain text version
+    plain_message = f"""
+HostelGrid - Complaint Resolved
+
+Your Complaint Has Been Resolved ✅
+
+Dear {complaint.student.name},
+
+We're pleased to inform you that your complaint has been reviewed and resolved by our admin team.
+
+Complaint Details:
+- Complaint ID: #{complaint.id}
+- Category: {complaint.get_category_display()}
+- Subject: {complaint.subject}
+- Description: {complaint.description}
+- Status: RESOLVED
+- Submitted: {complaint.created_at.strftime('%B %d, %Y at %I:%M %p')}
+- Resolved: {complaint.resolved_at.strftime('%B %d, %Y at %I:%M %p') if complaint.resolved_at else 'Just now'}
+
+{f"Admin Remarks: {complaint.admin_remarks}" if complaint.admin_remarks else ""}
+
+✨ Thank you for bringing this to our attention! We appreciate your patience and feedback.
+
+What's next?
+• Your complaint has been marked as resolved
+• You can view the resolution details on your dashboard
+• If you have any follow-up concerns, feel free to submit a new complaint
+
+If you're not satisfied with the resolution or have additional concerns, please don't hesitate to contact the hostel office or submit a new complaint.
+
+Thank you for using HostelGrid!
+This is an automated email. Please do not reply to this message.
+    """
+    
+    try:
+        send_mail(
+            subject=subject,
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[student_email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending complaint resolution email: {str(e)}")
+        return False
+

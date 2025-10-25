@@ -54,9 +54,15 @@
                                 </td>
                                 <td>
                                     <a href="{% url 'payment_detail' payment.pk %}" 
-                                       class="btn btn-sm btn-primary">
+                                       class="btn btn-sm btn-info">
                                         <i class="bi bi-eye"></i> View
                                     </a>
+                                    {% if payment.status == 'Pending' or payment.status == 'Overdue' %}
+                                    <a href="{% url 'student_payment_make' %}?payment_id={{ payment.pk }}" 
+                                       class="btn btn-sm btn-success">
+                                        <i class="bi bi-credit-card-fill"></i> Pay Now
+                                    </a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

@@ -10,7 +10,7 @@
                 <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirm Delete</h5>
             </div>
             <div class="card-body">
-                <p>Are you sure you want to delete the student <strong>{{ student.name }}</strong> ({{ student.roll_number }})?</p>
+                <p>Are you sure you want to delete the student <strong>{{ student.name }}</strong>{% if student.studentid %} (ID: {{ student.studentid }}){% endif %}?</p>
                 <p class="text-danger">This action cannot be undone.</p>
                 
                 <form method="post">

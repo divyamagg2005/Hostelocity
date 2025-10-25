@@ -20,59 +20,63 @@
                 {% endif %}
             </div>
             <div class="card-body">
-                <table class="table">
-                    <tr>
-                        <th width="30%">Student:</th>
-                        <td>{{ complaint.student.name }} ({{ complaint.student.roll_number }})</td>
-                    </tr>
-                    <tr>
-                        <th>Category:</th>
-                        <td><span class="badge bg-secondary">{{ complaint.get_category_display }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Subject:</th>
-                        <td><strong>{{ complaint.subject }}</strong></td>
-                    </tr>
-                    <tr>
-                        <th>Description:</th>
-                        <td>{{ complaint.description }}</td>
-                    </tr>
-                    <tr>
-                        <th>Status:</th>
-                        <td>
-                            {% if complaint.status == 'pending' %}
-                            <span class="badge bg-warning">Pending</span>
-                            {% elif complaint.status == 'in_progress' %}
-                            <span class="badge bg-info">In Progress</span>
-                            {% else %}
-                            <span class="badge bg-success">Resolved</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Created At:</th>
-                        <td>{{ complaint.created_at|date:"M d, Y H:i" }}</td>
-                    </tr>
-                    <tr>
-                        <th>Last Updated:</th>
-                        <td>{{ complaint.updated_at|date:"M d, Y H:i" }}</td>
-                    </tr>
-                    {% if complaint.resolved_at %}
-                    <tr>
-                        <th>Resolved At:</th>
-                        <td>{{ complaint.resolved_at|date:"M d, Y H:i" }}</td>
-                    </tr>
-                    {% endif %}
-                    {% if complaint.admin_remarks %}
-                    <tr>
-                        <th>Admin Remarks:</th>
-                        <td>
-                            <div class="alert alert-info mb-0">
-                                {{ complaint.admin_remarks }}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endif %}
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th width="30%" style="color: var(--text-primary);">Student:</th>
+                            <td style="color: var(--text-primary);">
+                                {{ complaint.student.name }}{% if complaint.student.studentid %} (ID: {{ complaint.student.studentid }}){% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Category:</th>
+                            <td><span class="badge bg-secondary">{{ complaint.get_category_display }}</span></td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Subject:</th>
+                            <td><strong style="color: var(--text-primary);">{{ complaint.subject }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Description:</th>
+                            <td style="color: var(--text-primary);">{{ complaint.description }}</td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Status:</th>
+                            <td>
+                                {% if complaint.status == 'pending' %}
+                                <span class="badge bg-warning" style="color: #000;">Pending</span>
+                                {% elif complaint.status == 'in_progress' %}
+                                <span class="badge bg-info">In Progress</span>
+                                {% else %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Created At:</th>
+                            <td style="color: var(--text-primary);">{{ complaint.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th style="color: var(--text-primary);">Last Updated:</th>
+                            <td style="color: var(--text-primary);">{{ complaint.updated_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        {% if complaint.resolved_at %}
+                        <tr>
+                            <th style="color: var(--text-primary);">Resolved At:</th>
+                            <td style="color: var(--text-primary);">{{ complaint.resolved_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if complaint.admin_remarks %}
+                        <tr>
+                            <th style="color: var(--text-primary);">Admin Remarks:</th>
+                            <td>
+                                <div class="alert alert-info mb-0" style="color: var(--text-primary);">
+                                    {{ complaint.admin_remarks }}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
                 </table>
                 
                 <a href="{% url 'complaint_list' %}" class="btn btn-secondary">
