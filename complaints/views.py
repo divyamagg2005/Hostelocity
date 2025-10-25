@@ -52,54 +52,70 @@ def complaint_list(request):
 @login_required
 def complaint_add(request):
     """Add new complaint (students only)"""
-    # Try to find student by username matching
-    student = Student.objects.filter(name__icontains=request.user.username).first()
-    if not student:
-        # If no exact match, try to find by user profile or create a basic student record
-        student = Student.objects.filter(studentid=request.user.id).first()
-    
-    if not student:
-        messages.error(request, 'Student profile not found. Please contact admin.')
-        return redirect('dashboard')
-    
-    if request.method == 'POST':
-        form = ComplaintForm(request.POST)
-        if form.is_valid():
-            complaint = form.save(commit=False)
-            complaint.student = student
-            complaint.save()
-            
-            # Send email confirmation to student (only if email is configured)
-            email_sent = False
-            try:
-                from django.conf import settings
-                # Only attempt to send email if email is properly configured
-                if settings.EMAIL_HOST_USER and request.user.email:
-                    from hostel_management.email_utils import send_complaint_confirmation_email
-                    email_sent = send_complaint_confirmation_email(complaint, request.user.email)
-            except Exception as e:
-                print(f"Email sending failed: {str(e)}")
-                # Continue even if email fails
-            
-            if email_sent:
-                messages.success(request, 'Complaint submitted successfully! A confirmation email has been sent.')
+    try:
+        # Try to find student by username matching
+        student = Student.objects.filter(name__icontains=request.user.username).first()
+        if not student:
+            # If no exact match, try to find by user profile or create a basic student record
+            student = Student.objects.filter(studentid=request.user.id).first()
+        
+        if not student:
+            messages.error(request, 'Student profile not found. Please contact admin.')
+            return redirect('dashboard')
+        
+        if request.method == 'POST':
+            form = ComplaintForm(request.POST)
+            if form.is_valid():
+                try:
+                    complaint = form.save(commit=False)
+                    complaint.student = student
+                    complaint.save()
+                    
+                    # Send email confirmation to student (only if email is configured)
+                    email_sent = False
+                    try:
+                        from django.conf import settings
+                        # Only attempt to send email if email is properly configured
+                        if settings.EMAIL_HOST_USER and request.user.email:
+                            from hostel_management.email_utils import send_complaint_confirmation_email
+                            email_sent = send_complaint_confirmation_email(complaint, request.user.email)
+                    except Exception as e:
+                        print(f"Email sending failed: {str(e)}")
+                        # Continue even if email fails
+                    
+                    if email_sent:
+                        messages.success(request, 'Complaint submitted successfully! A confirmation email has been sent.')
+                    else:
+                        messages.success(request, 'Complaint submitted successfully!')
+                    return redirect('complaint_list')
+                except Exception as e:
+                    messages.error(request, f'Error saving complaint: {str(e)}')
+                    print(f"Error saving complaint: {str(e)}")
             else:
-                messages.success(request, 'Complaint submitted successfully!')
-            return redirect('complaint_list')
-    else:
-        form = ComplaintForm()
-    
-    # Determine template based on user role
-    if is_admin(request.user):
-        template = 'complaints/complaint_form.html'
-    else:
-        template = 'complaints/student_complaint_form.html'
-    
-    context = {
-        'form': form,
-        'title': 'Submit Complaint',
-    }
-    return render(request, template, context)
+                # Form validation errors
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'{field}: {error}')
+        else:
+            form = ComplaintForm()
+        
+        # Determine template based on user role
+        if is_admin(request.user):
+            template = 'complaints/complaint_form.html'
+        else:
+            template = 'complaints/student_complaint_form.html'
+        
+        context = {
+            'form': form,
+            'title': 'Submit Complaint',
+        }
+        return render(request, template, context)
+    except Exception as e:
+        messages.error(request, f'Unexpected error: {str(e)}')
+        print(f"Unexpected error in complaint_add: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return redirect('dashboard')
 
 
 @login_required
