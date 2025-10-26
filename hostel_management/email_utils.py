@@ -14,16 +14,23 @@ def send_email_with_timeout(send_function, timeout=3):
     Returns immediately, email sending doesn't block main execution
     """
     def run_with_timeout():
+        import time
         try:
+            print(f"[EMAIL] Starting background email send...")
             send_function()
+            print(f"[EMAIL] Email sent successfully!")
         except Exception as e:
-            print(f"Background email sending failed: {str(e)}")
+            print(f"[EMAIL] Background email sending failed: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
-    # Start email in background thread
-    thread = threading.Thread(target=run_with_timeout, daemon=True)
+    # Start email in background thread (non-daemon for local testing)
+    # This ensures the thread completes even if main thread moves on
+    thread = threading.Thread(target=run_with_timeout, daemon=False)
     thread.start()
     
-    # Don't wait for completion - return immediately
+    # Return immediately - email sends in background
+    print(f"[EMAIL] Background thread started, returning immediately")
     return True
 
 
@@ -107,21 +114,27 @@ This is an automated email. Please do not reply to this message.
     """
     
     def _send():
-    try:
+        try:
+            print(f"[COMPLAINT EMAIL] Preparing to send to {student_email}")
+            print(f"[COMPLAINT EMAIL] From: {settings.DEFAULT_FROM_EMAIL}")
             from django.core.mail import get_connection
             # Create connection with short timeout
-            connection = get_connection(timeout=3)
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[student_email],
-            html_message=html_message,
-            fail_silently=False,
+            connection = get_connection(timeout=5)
+            print(f"[COMPLAINT EMAIL] Connection created, sending mail...")
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[student_email],
+                html_message=html_message,
+                fail_silently=False,
                 connection=connection,
-        )
-    except Exception as e:
-        print(f"Error sending complaint email: {str(e)}")
+            )
+            print(f"[COMPLAINT EMAIL] Mail sent successfully!")
+        except Exception as e:
+            print(f"[COMPLAINT EMAIL] Error sending complaint email: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     # Send in background thread - returns immediately
     return send_email_with_timeout(_send)
@@ -213,21 +226,27 @@ This is an automated email. Please do not reply to this message.
     """
     
     def _send():
-    try:
+        try:
+            print(f"[PAYMENT EMAIL] Preparing to send to {student_email}")
+            print(f"[PAYMENT EMAIL] From: {settings.DEFAULT_FROM_EMAIL}")
             from django.core.mail import get_connection
             # Create connection with short timeout
-            connection = get_connection(timeout=3)
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[student_email],
-            html_message=html_message,
-            fail_silently=False,
+            connection = get_connection(timeout=5)
+            print(f"[PAYMENT EMAIL] Connection created, sending mail...")
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[student_email],
+                html_message=html_message,
+                fail_silently=False,
                 connection=connection,
-        )
-    except Exception as e:
-        print(f"Error sending payment email: {str(e)}")
+            )
+            print(f"[PAYMENT EMAIL] Mail sent successfully!")
+        except Exception as e:
+            print(f"[PAYMENT EMAIL] Error sending payment email: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     # Send in background thread - returns immediately
     return send_email_with_timeout(_send)
@@ -331,9 +350,12 @@ This is an automated email. Please do not reply to this message.
     
     def _send():
         try:
+            print(f"[RESOLUTION EMAIL] Preparing to send to {student_email}")
+            print(f"[RESOLUTION EMAIL] From: {settings.DEFAULT_FROM_EMAIL}")
             from django.core.mail import get_connection
             # Create connection with short timeout
-            connection = get_connection(timeout=3)
+            connection = get_connection(timeout=5)
+            print(f"[RESOLUTION EMAIL] Connection created, sending mail...")
             send_mail(
                 subject=subject,
                 message=plain_message,
@@ -343,8 +365,11 @@ This is an automated email. Please do not reply to this message.
                 fail_silently=False,
                 connection=connection,
             )
+            print(f"[RESOLUTION EMAIL] Mail sent successfully!")
         except Exception as e:
-            print(f"Error sending complaint resolution email: {str(e)}")
+            print(f"[RESOLUTION EMAIL] Error sending complaint resolution email: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     # Send in background thread - returns immediately
     return send_email_with_timeout(_send)
