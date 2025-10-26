@@ -75,8 +75,8 @@ def register_view(request):
             return render(request, 'register.html')
         
         if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email already exists.')
-            return render(request, 'register.html')
+            messages.warning(request, 'An account with this email already exists. Please reset your password.')
+            return redirect('password_reset')
         
         # Create user
         user = User.objects.create_user(username=username, email=email, password=password)
@@ -88,6 +88,39 @@ def register_view(request):
         return redirect('login')
     
     return render(request, 'register.html')
+
+
+def password_reset_view(request):
+    """Password reset view - allows users to reset their password using email"""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        new_password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if not email or not new_password or not confirm_password:
+            messages.error(request, 'All fields are required.')
+            return render(request, 'password_reset.html')
+        
+        if new_password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'password_reset.html')
+        
+        # Check if user exists with this email
+        try:
+            user = User.objects.get(email=email)
+            # Update the password
+            user.set_password(new_password)
+            user.save()
+            messages.success(request, 'Password reset successful! You can now login with your new password.')
+            return redirect('login')
+        except User.DoesNotExist:
+            messages.error(request, 'No account found with this email address.')
+            return render(request, 'password_reset.html')
+    
+    return render(request, 'password_reset.html')
 
 
 @login_required
