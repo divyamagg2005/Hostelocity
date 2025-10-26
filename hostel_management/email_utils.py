@@ -5,6 +5,26 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+import threading
+
+
+def send_email_with_timeout(send_function, timeout=3):
+    """
+    Wrapper to send email in background thread with timeout
+    Returns immediately, email sending doesn't block main execution
+    """
+    def run_with_timeout():
+        try:
+            send_function()
+        except Exception as e:
+            print(f"Background email sending failed: {str(e)}")
+    
+    # Start email in background thread
+    thread = threading.Thread(target=run_with_timeout, daemon=True)
+    thread.start()
+    
+    # Don't wait for completion - return immediately
+    return True
 
 
 def send_complaint_confirmation_email(complaint, student_email):
@@ -86,15 +106,11 @@ Thank you for using HostelGrid!
 This is an automated email. Please do not reply to this message.
     """
     
+    def _send():
     try:
-        # Use fail_silently=True to prevent blocking and timeouts
-        from django.core.mail import get_connection
-        
-        # Create connection with timeout
-        connection = get_connection(
-            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10)
-        )
-        
+            from django.core.mail import get_connection
+            # Create connection with short timeout
+            connection = get_connection(timeout=3)
         send_mail(
             subject=subject,
             message=plain_message,
@@ -102,12 +118,13 @@ This is an automated email. Please do not reply to this message.
             recipient_list=[student_email],
             html_message=html_message,
             fail_silently=False,
-            connection=connection,
+                connection=connection,
         )
-        return True
     except Exception as e:
         print(f"Error sending complaint email: {str(e)}")
-        return False
+    
+    # Send in background thread - returns immediately
+    return send_email_with_timeout(_send)
 
 
 def send_payment_confirmation_email(fee, payment_type, student_email, student_name):
@@ -195,15 +212,11 @@ Thank you for your payment!
 This is an automated email. Please do not reply to this message.
     """
     
+    def _send():
     try:
-        # Use connection with timeout to prevent blocking
-        from django.core.mail import get_connection
-        
-        # Create connection with timeout
-        connection = get_connection(
-            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10)
-        )
-        
+            from django.core.mail import get_connection
+            # Create connection with short timeout
+            connection = get_connection(timeout=3)
         send_mail(
             subject=subject,
             message=plain_message,
@@ -211,12 +224,13 @@ This is an automated email. Please do not reply to this message.
             recipient_list=[student_email],
             html_message=html_message,
             fail_silently=False,
-            connection=connection,
+                connection=connection,
         )
-        return True
     except Exception as e:
         print(f"Error sending payment email: {str(e)}")
-        return False
+    
+    # Send in background thread - returns immediately
+    return send_email_with_timeout(_send)
 
 
 def send_complaint_resolution_email(complaint, student_email):
@@ -315,26 +329,23 @@ Thank you for using HostelGrid!
 This is an automated email. Please do not reply to this message.
     """
     
-    try:
-        # Use connection with timeout to prevent blocking
-        from django.core.mail import get_connection
-        
-        # Create connection with timeout
-        connection = get_connection(
-            timeout=getattr(settings, 'EMAIL_TIMEOUT', 10)
-        )
-        
-        send_mail(
-            subject=subject,
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[student_email],
-            html_message=html_message,
-            fail_silently=False,
-            connection=connection,
-        )
-        return True
-    except Exception as e:
-        print(f"Error sending complaint resolution email: {str(e)}")
-        return False
+    def _send():
+        try:
+            from django.core.mail import get_connection
+            # Create connection with short timeout
+            connection = get_connection(timeout=3)
+            send_mail(
+                subject=subject,
+                message=plain_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[student_email],
+                html_message=html_message,
+                fail_silently=False,
+                connection=connection,
+            )
+        except Exception as e:
+            print(f"Error sending complaint resolution email: {str(e)}")
+    
+    # Send in background thread - returns immediately
+    return send_email_with_timeout(_send)
 
